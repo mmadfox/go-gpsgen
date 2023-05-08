@@ -207,6 +207,7 @@ func (d *Device) fillSnapshot(state *State, snap *pb.Device) {
 		snap.Model = state.Model
 	}
 	if len(snap.Props) == 0 && len(state.Props) > 0 {
+		snap.Props = make(map[string]string, len(state.Props))
 		for k, v := range state.Props {
 			snap.Props[k] = v
 		}

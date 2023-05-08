@@ -78,6 +78,10 @@ func WithDescritpion(descr string) DeviceSetting {
 	}
 }
 
+func Routes(route ...*navigator.Route) []*navigator.Route {
+	return append([]*navigator.Route{}, route...)
+}
+
 func defaultSettings() *deviceSettings {
 	return &deviceSettings{
 		id:        uuid.New(),
