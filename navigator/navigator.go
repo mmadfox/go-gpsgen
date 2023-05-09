@@ -115,7 +115,7 @@ func (n *Navigator) Location() (loc Location) {
 	loc.CurrentDistance = n.currentDistance
 	loc.TotalDistance = n.totalDist
 	loc.UTM = ToUTM(n.point.X, n.point.Y)
-	loc.LatDMS, n.location.LonDMS = ToDMS(n.point.X, n.point.Y)
+	loc.LatDMS, loc.LonDMS = ToDMS(n.point.X, n.point.Y)
 	return loc
 }
 

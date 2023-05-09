@@ -164,6 +164,7 @@ func (d *Device) nextTick(tick float64) bool {
 }
 
 func (d *Device) fillState(state *State) {
+	state.Model = d.model.String()
 	state.Battery = d.battery.Value()
 	state.Speed = d.speed.Value()
 	state.Tick = d.loop

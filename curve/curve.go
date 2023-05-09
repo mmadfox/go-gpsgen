@@ -126,7 +126,7 @@ func RandomCurveWithMode(min, max float64, pn int, m CurveMode) (*Curve, error) 
 		if min > max {
 			return nil, fmt.Errorf("curve: max value greater or equal min %.2f > %.2f", min, max)
 		}
-		if min <= 0 && max != 0 {
+		if min < 0 && max != 0 {
 			return nil, fmt.Errorf("curve: min and max values are empty")
 		}
 		step := max / float64(pn)
