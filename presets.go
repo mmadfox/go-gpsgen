@@ -20,7 +20,7 @@ func Drone(
 	)
 }
 
-func Bicycle(
+func Tracker(
 	model string,
 	routes []*navigator.Route,
 	props Properties,
@@ -34,6 +34,6 @@ func Bicycle(
 		WithSensors(sensors...),
 		WithOffline(10, 120),
 		WithProps(props),
-		WithDescritpion("Bicycle"),
+		WithDescritpion("Tracker"),
 	)
 }
