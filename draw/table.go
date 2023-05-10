@@ -13,6 +13,7 @@ import (
 func Table(s *gpsgen.State) {
 	if s == nil {
 		fmt.Println("state is <nil>")
+		return
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)

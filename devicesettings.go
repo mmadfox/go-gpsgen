@@ -137,7 +137,7 @@ func (ds *deviceSettings) applyFor(d *Device) (err error) {
 		}
 	}
 	if len(ds.routes) > 0 {
-		d.navigator.AddRoutes(ds.routes)
+		d.navigator.AddRoutes(ds.routes...)
 	} else {
 		defaultRoute, err := route.Generate()
 		if err != nil {

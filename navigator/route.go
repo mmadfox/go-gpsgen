@@ -37,6 +37,10 @@ func NewRoute(points [][]Point) (*Route, error) {
 	return &newRoute, nil
 }
 
+func (r *Route) TotalDistance() float64 {
+	return r.dist
+}
+
 func (r *Route) IsPolygon(track int) bool {
 	if track > len(r.tracks) {
 		return false

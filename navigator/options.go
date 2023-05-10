@@ -3,6 +3,7 @@ package navigator
 type navigatorOptions struct {
 	elevationMin, elevationMax, elevationAmplitude float64
 	minOffline, maxOffline                         int
+	skipOffline                                    bool
 }
 
 type Option func(*navigatorOptions)
@@ -14,6 +15,12 @@ func defaultOptions() *navigatorOptions {
 		elevationAmplitude: 4,
 		minOffline:         1,
 		maxOffline:         10,
+	}
+}
+
+func SkipOfflineMode() Option {
+	return func(opt *navigatorOptions) {
+		opt.skipOffline = true
 	}
 }
 

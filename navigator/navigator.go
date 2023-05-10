@@ -17,6 +17,7 @@ type Navigator struct {
 	elevation       *types.Sensor
 	offline         *types.Random
 	totalDist       float64
+	skipOffline     bool
 }
 
 func New(opts ...Option) (*Navigator, error) {
@@ -35,16 +36,20 @@ func New(opts ...Option) (*Navigator, error) {
 	}
 
 	nav := &Navigator{
-		routes:    make([]*Route, 0),
-		location:  new(Location),
-		elevation: elevation,
-		offline:   types.NewRandom(o.minOffline, o.maxOffline),
+		routes:      make([]*Route, 0),
+		location:    new(Location),
+		elevation:   elevation,
+		skipOffline: o.skipOffline,
+	}
+	switch o.skipOffline {
+	case false:
+		nav.offline = types.NewRandom(o.minOffline, o.maxOffline)
 	}
 
 	return nav, nil
 }
 
-func (n *Navigator) AddRoutes(routes []*Route) {
+func (n *Navigator) AddRoutes(routes ...*Route) {
 	n.routes = append(n.routes, routes...)
 	n.calcRouteDistance()
 }
@@ -120,6 +125,9 @@ func (n *Navigator) Location() (loc Location) {
 }
 
 func (n *Navigator) NextOffline() {
+	if n.skipOffline {
+		return
+	}
 	if n.offlineIndex > 0 {
 		n.offlineIndex--
 	}
@@ -130,6 +138,9 @@ func (n *Navigator) NextSensors(t float64) {
 }
 
 func (n *Navigator) ToOffline() {
+	if n.skipOffline {
+		return
+	}
 	n.offlineIndex = n.offline.Value()
 }
 
@@ -163,7 +174,7 @@ loop:
 			switch {
 			case foundSegment:
 				if !seg.hasRelation() {
-					n.offlineIndex = n.offline.Value()
+					n.ToOffline()
 					break loop
 				}
 				continue
@@ -171,7 +182,7 @@ loop:
 				if !n.nextTrack() {
 					n.nextRoute()
 				}
-				n.offlineIndex = n.offline.Value()
+				n.ToOffline()
 				break loop
 			}
 		}
