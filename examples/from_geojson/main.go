@@ -27,7 +27,7 @@ func main() {
 		Max:  0.9,
 	}
 
-	myDrone, err := gpsgen.Drone("MyDrone-Tx4501", route1, props, tbsSensor)
+	myDrone, err := gpsgen.DroneWithSensors("MyDrone-Tx4501", route1, props, tbsSensor)
 	if err != nil {
 		panic(err)
 	}

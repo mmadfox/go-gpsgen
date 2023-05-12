@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mmadfox/go-gpsgen/curve"
+	"github.com/mmadfox/go-gpsgen/proto"
 )
 
 type Sensor struct {
@@ -29,6 +30,27 @@ func NewSensor(name string, min, max float64, amplitude int) (*Sensor, error) {
 		max:  max,
 		gen:  gen,
 	}, nil
+}
+
+func (t *Sensor) ToProto() *proto.SensorState {
+	return &proto.SensorState{
+		Min:  t.min,
+		Max:  t.max,
+		ValX: t.valX,
+		ValY: t.valY,
+		Name: t.name,
+		Gen:  t.gen.ToProto(),
+	}
+}
+
+func (t *Sensor) FromProto(sensor *proto.SensorState) {
+	t.gen = new(curve.Curve)
+	t.gen.FromProto(sensor.Gen)
+	t.min = sensor.Min
+	t.max = sensor.Max
+	t.valX = sensor.ValX
+	t.valY = sensor.ValY
+	t.name = sensor.Name
 }
 
 func (t *Sensor) Name() string {

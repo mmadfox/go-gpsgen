@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+option go_package = "./proto";
+
+package proto;
+
+message TypeState {
+    double min = 1; 
+	double max = 2;
+    double val = 3;
+    Curve gen = 4;
+}    
+
+message SensorState {
+    double min = 1;
+    double max = 2;
+    double val_x = 3;
+    double val_y = 4;
+    string name = 5; 
+    Curve gen = 6;
+}
+
+message Curve {
+   message Point {
+       double x = 1;
+       double y = 2; 
+   }
+            
+   message ControlPoint {
+       Point vp = 1; 
+       Point cp = 2;
+   }
+
+   repeated ControlPoint points = 1; 
+   int64 mode = 2;
+}

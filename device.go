@@ -88,6 +88,14 @@ func NewDevice(settings ...DeviceSetting) (*Device, error) {
 	return device, nil
 }
 
+func (d *Device) MarshalJSON() ([]byte, error) {
+	return nil, nil
+}
+
+func (d *Device) UnmarshalJSON(data []byte) error {
+	return nil
+}
+
 func (d *Device) handleChange() {
 	snapshot := &pb.Device{}
 	for state := range d.stateCh {
@@ -187,6 +195,37 @@ func (d *Device) fillSnapshot(state *State, snap *pb.Device) {
 	snap.Latitude = state.Location.Lat
 	snap.Longitude = state.Location.Lon
 	snap.Elevation = state.Location.Alt
+	snap.CurrentDistance = state.Location.CurrentDistance
+	snap.TotalDistance = state.Location.TotalDistance
+
+	if snap.Lat == nil {
+		snap.Lat = new(pb.DMS)
+	}
+	if snap.Lon == nil {
+		snap.Lon = new(pb.DMS)
+	}
+	if snap.Utm == nil {
+		snap.Utm = new(pb.UTM)
+	}
+
+	snap.Lat.Degrees = int64(state.Location.LatDMS.Degrees)
+	snap.Lat.Direction = state.Location.LatDMS.Direction
+	snap.Lat.Minutes = int64(state.Location.LatDMS.Minutes)
+	snap.Lat.Seconds = state.Location.LatDMS.Seconds
+
+	snap.Lon.Degrees = int64(state.Location.LonDMS.Degrees)
+	snap.Lon.Direction = state.Location.LonDMS.Direction
+	snap.Lon.Minutes = int64(state.Location.LonDMS.Minutes)
+	snap.Lon.Seconds = state.Location.LonDMS.Seconds
+
+	snap.Utm.CentralMeridian = state.Location.CurrentDistance
+	snap.Utm.Easting = state.Location.UTM.Easting
+	snap.Utm.Hemisphere = state.Location.UTM.Hemisphere
+	snap.Utm.LatZone = state.Location.UTM.LatZone
+	snap.Utm.LongZone = int64(state.Location.UTM.LongZone)
+	snap.Utm.Northing = state.Location.UTM.Northing
+	snap.Utm.Srid = int64(state.Location.UTM.SRID)
+
 	if snap.Sensors == nil && len(state.Sensors) > 0 {
 		snap.Sensors = make([]*pb.Sensor, 0, len(state.Sensors))
 		for name := range state.Sensors {

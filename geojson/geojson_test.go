@@ -27,6 +27,13 @@ func TestDecode(t *testing.T) {
 		wantErr    bool
 	}{
 		{
+			name: "minified feature collection",
+			args: args{
+				r: loadData("minified"),
+			},
+			wantRoutes: 1,
+		},
+		{
 			name: "geometry collection",
 			args: args{
 				r: loadData("geometry_collection"),

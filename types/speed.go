@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mmadfox/go-gpsgen/curve"
+	"github.com/mmadfox/go-gpsgen/proto"
 )
 
 const (
@@ -25,9 +26,6 @@ type Speed struct {
 }
 
 func NewSpeed(min, max float64, amplitude int) (*Speed, error) {
-	if amplitude > 256 {
-		amplitude = 256
-	}
 	if min < minSpeedVal {
 		return nil, ErrMinSpeed
 	}
@@ -36,6 +34,12 @@ func NewSpeed(min, max float64, amplitude int) (*Speed, error) {
 	}
 	if min == max {
 		max += 3
+	}
+	if amplitude < 4 {
+		amplitude = 4
+	}
+	if amplitude > 1024 {
+		amplitude = 1024
 	}
 	gen, err := curve.RandomCurveWithMode(min, max, amplitude, curve.ModeDefault|curve.ModeMinStart|curve.ModeMinEnd)
 	if err != nil {
@@ -46,6 +50,23 @@ func NewSpeed(min, max float64, amplitude int) (*Speed, error) {
 		max: max,
 		gen: gen,
 	}, nil
+}
+
+func (t *Speed) ToProto() *proto.TypeState {
+	return &proto.TypeState{
+		Min: t.min,
+		Max: t.max,
+		Val: t.val,
+		Gen: t.gen.ToProto(),
+	}
+}
+
+func (t *Speed) FromProto(speed *proto.TypeState) {
+	t.gen = new(curve.Curve)
+	t.gen.FromProto(speed.Gen)
+	t.min = speed.Min
+	t.max = speed.Max
+	t.val = speed.Val
 }
 
 func (t *Speed) Min() float64 {

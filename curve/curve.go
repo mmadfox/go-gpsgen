@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+
+	"github.com/mmadfox/go-gpsgen/proto"
 )
 
 var (
@@ -31,7 +33,7 @@ type point struct {
 
 type Curve struct {
 	points []point
-	mode   CurveMode
+	mode   int
 }
 
 func New(cp []Point) (*Curve, error) {
@@ -65,6 +67,38 @@ func New(cp []Point) (*Curve, error) {
 
 func (c *Curve) Renew() {
 	// TODO:
+}
+
+func (c *Curve) ToProto() *proto.Curve {
+	pbcurve := &proto.Curve{
+		Points: make([]*proto.Curve_ControlPoint, len(c.points)),
+		Mode:   int64(c.mode),
+	}
+	for i := 0; i < len(c.points); i++ {
+		pbcurve.Points[i] = &proto.Curve_ControlPoint{
+			Vp: &proto.Curve_Point{X: c.points[i].vp.X, Y: c.points[i].vp.Y},
+			Cp: &proto.Curve_Point{X: c.points[i].cp.X, Y: c.points[i].cp.Y},
+		}
+	}
+	return pbcurve
+}
+
+func (c *Curve) FromProto(pb *proto.Curve) {
+	c.points = make([]point, len(pb.Points))
+	for i := 0; i < len(pb.Points); i++ {
+		pt := pb.Points[i]
+		c.points[i] = point{
+			vp: Point{
+				X: pt.Vp.X,
+				Y: pt.Vp.Y,
+			},
+			cp: Point{
+				X: pt.Cp.X,
+				Y: pt.Cp.Y,
+			},
+		}
+	}
+	c.mode = int(pb.Mode)
 }
 
 func (c *Curve) Point(t float64) Point {
@@ -101,7 +135,7 @@ func RandomCurveWithMode(min, max float64, pn int, m CurveMode) (*Curve, error) 
 
 	curv := Curve{
 		points: make([]point, pn),
-		mode:   ModeDefault,
+		mode:   int(m),
 	}
 
 	if m&ModeMinMax != 0 {
@@ -151,7 +185,7 @@ func RandomCurveWithMode(min, max float64, pn int, m CurveMode) (*Curve, error) 
 			} else {
 				y = randomFloat(min, max)
 			}
-			curv.points[i] = point{vp: Point{X: float64(i), Y: y}}
+			curv.points[i] = point{vp: Point{X: float64(i * 10), Y: y}}
 		}
 	}
 

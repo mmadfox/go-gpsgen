@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"strings"
+	"regexp"
 
 	"github.com/mmadfox/go-gpsgen/navigator"
 	gj "github.com/paulmach/go.geojson"
@@ -40,12 +40,13 @@ func Decode(data []byte) ([]*navigator.Route, error) {
 	if len(data) == 0 {
 		return nil, fmt.Errorf("geojson: file is empty")
 	}
-	switch {
-	case is(data, "Feature"):
+	typ := is(data)
+	switch typ {
+	case "Feature":
 		return featureToRoutes(data)
-	case is(data, "FeatureCollection"):
+	case "FeatureCollection":
 		return featureCollectionToRoutes(data)
-	case is(data, "GeometryCollection"):
+	case "GeometryCollection":
 		return collectionToRoutes(data)
 	default:
 		return toRoutes(data)
@@ -214,11 +215,26 @@ func geomToRoutes(geom *gj.Geometry) (routes []*navigator.Route, err error) {
 	return routes, nil
 }
 
-func is(data []byte, typ string) bool {
-	if len(data) < 60 {
-		return false
+var (
+	featureCollectionRe, _  = regexp.Compile("FeatureCollection")
+	featureRe, _            = regexp.Compile("Feature")
+	geometryCollectionRe, _ = regexp.Compile("GeometryCollection")
+)
+
+func is(data []byte) string {
+	match := featureCollectionRe.FindIndex(data)
+	if len(match) > 0 {
+		return "FeatureCollection"
 	}
-	return strings.Contains(string(data[:60]), `"`+typ+`"`)
+	match = featureRe.FindIndex(data)
+	if len(match) > 0 {
+		return "Feature"
+	}
+	match = geometryCollectionRe.FindIndex(data)
+	if len(match) > 0 {
+		return "GeometryCollection"
+	}
+	return ""
 }
 
 func value2dToRoutes(values [][]float64) ([]*navigator.Route, error) {

@@ -4,6 +4,7 @@ import (
 	"math"
 	"testing"
 
+	"github.com/mmadfox/go-gpsgen/proto"
 	"github.com/stretchr/testify/require"
 )
 
@@ -78,5 +79,45 @@ func TestSpeed_Next(t *testing.T) {
 		}
 		diff := math.Abs(speed.Value() - prev)
 		require.NotZero(t, diff)
+	}
+}
+
+func TestSpeedToProto(t *testing.T) {
+	speed, err := NewSpeed(1, 10, 20)
+	require.NoError(t, err)
+	require.NotNil(t, speed)
+
+	protoSpeed := speed.ToProto()
+	require.NotNil(t, protoSpeed)
+	require.Equal(t, speed.Min(), protoSpeed.Min)
+	require.Equal(t, speed.Max(), protoSpeed.Max)
+	require.Equal(t, speed.Value(), protoSpeed.Val)
+	require.NotNil(t, protoSpeed.Gen)
+}
+
+func TestSpeedFromProto(t *testing.T) {
+	protoSpeed := &proto.TypeState{
+		Min: 2,
+		Max: 4,
+		Val: 3,
+		Gen: protoGenerator(),
+	}
+
+	speed := new(Speed)
+	speed.FromProto(protoSpeed)
+	require.Equal(t, protoSpeed.Min, speed.Min())
+	require.Equal(t, protoSpeed.Max, speed.Max())
+	require.Equal(t, protoSpeed.Val, speed.Value())
+}
+
+func protoGenerator() *proto.Curve {
+	return &proto.Curve{
+		Points: []*proto.Curve_ControlPoint{
+			{
+				Vp: &proto.Curve_Point{},
+				Cp: &proto.Curve_Point{},
+			},
+		},
+		Mode: 0,
 	}
 }

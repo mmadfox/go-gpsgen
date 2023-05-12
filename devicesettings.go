@@ -43,7 +43,8 @@ func WithSpeed(min, max float64, amplitude int) DeviceSetting {
 
 func WithBattery(min, max float64) DeviceSetting {
 	return func(ds *deviceSettings) {
-		ds.battery.min, ds.battery.max = min, max
+		ds.battery.min = min
+		ds.battery.max = max
 	}
 }
 
