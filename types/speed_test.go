@@ -10,8 +10,9 @@ import (
 
 func TestNewSpeed(t *testing.T) {
 	type args struct {
-		min float64
-		max float64
+		min       float64
+		max       float64
+		amplitude int
 	}
 	type want struct {
 		min float64
@@ -23,6 +24,18 @@ func TestNewSpeed(t *testing.T) {
 		want    want
 		wantErr bool
 	}{
+		{
+			name: "should return valid speed value when min, max == 0",
+			args: args{
+				min:       0,
+				max:       0,
+				amplitude: minAmplitude,
+			},
+			want: want{
+				min: 1,
+				max: 1,
+			},
+		},
 		{
 			name: "should return error when min > max",
 			args: args{
@@ -40,20 +53,27 @@ func TestNewSpeed(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "should be greater by 3 units when the values are equal",
+			name: "should return error when amplitude less min value",
 			args: args{
-				min: 6,
-				max: 6,
+				min:       0,
+				max:       100,
+				amplitude: 0,
 			},
-			want: want{
-				min: 6,
-				max: 9,
+			wantErr: true,
+		},
+		{
+			name: "should return error when amplitude greater max value",
+			args: args{
+				min:       0,
+				max:       100,
+				amplitude: maxAmplitude + 1,
 			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewSpeed(tt.args.min, tt.args.max, 8)
+			got, err := NewSpeed(tt.args.min, tt.args.max, tt.args.amplitude)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewSpeed() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -61,6 +81,7 @@ func TestNewSpeed(t *testing.T) {
 			if !tt.wantErr {
 				require.Equal(t, tt.want.min, got.Min())
 				require.Equal(t, tt.want.max, got.Max())
+				require.NotZero(t, got.String())
 			}
 		})
 	}
@@ -72,7 +93,7 @@ func TestSpeed_Next(t *testing.T) {
 
 	var prev float64
 	for i := 0; i < 100; i++ {
-		speed.Next(float64(i))
+		speed.Next(float64(i) / 100)
 		if i < 2 {
 			prev = speed.Value()
 			continue
