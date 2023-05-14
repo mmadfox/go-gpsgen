@@ -13,7 +13,7 @@ The library can be used in testing and debugging GPS dependent applications or d
 
 ## Table of contents
 + [Examples](#examples)
-+ [Install](#installation)
++ [Install](#install) 
 + [Generated data](#generated-data)
 + [Limits and base units](#limits-and-base-units)
 + [Settings](#settings)
@@ -23,6 +23,7 @@ The library can be used in testing and debugging GPS dependent applications or d
    - [Random](#random)
    - [Static](#static)
    - [Standard](#standard)
+
 
 ### Examples
 [Examples](./examples/)
