@@ -115,7 +115,7 @@ $ go get github.com/mmadfox/go-gpsgen
 | WithBattery | Battery charge range 0..100 in percent |
 | With Sensors | Additional sensors that can be added to the device. Sensor{name, min, max, amplitude} |
 | WithElevation | Height range min..max in meters |
-| Withoffline | Between switching tracks or routes, the device will go offline min..max in seconds |
+| WithOffline | Between switching tracks or routes, the device will go offline min..max in seconds |
 | WithProps | Device characteristics map[string]string |
 | With Description | Short description of the device |
 
