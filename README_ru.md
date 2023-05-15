@@ -23,6 +23,8 @@ Language: [En](./README.md)
   - [Рандомные](#рандомный)
   - [Статичные](#cтатичный)
   - [Стандартный](#стандартный)
++ [Пресеты устройств](#пресеты-устройств)  
+
 
 ### Примеры
 [Examples](./examples/)
@@ -237,14 +239,24 @@ func main() {
 	_ = r1
 }
 ```
+### Пресеты устройств
+```go 
+// Drone 
+gpsgen.Drone(model string, props gpsgen.Properties, route ...*navigator.Route) (*gpsgen.Device, error)
+gpsgen.DroneWithSensors( model string, routes []*navigator.Route, props gpsgen.Properties, sensors ...gpsgen.Sensor) (*gpsgen.Device, error)
+
+// Tracker
+gpsgen.Tracker( model string, props gpsgen.Properties, route ...*navigator.Route) (*gpsgen.Device, error)
+gpsgen.TrackerWithSensors( model string, routes []*navigator.Route, props gpsgen.Properties, sensors ...gpsgen.Sensor) (*gpsgen.Device, error)
+``` 
 ### Пример amplitude option
 На рисунках представлены рандомные значения от 0 до 120 и контрольные точки 4,8,16,32,64,128,256,512
 
-<img src="./.github/amplitudes/4.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/8.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/16.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/32.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/64.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/128.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/256.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/512.png" alt="GPS data generator" height="250px">
+<img src="./.github/amplitudes/4.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/8.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/16.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/32.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/64.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/128.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/256.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/512.png" alt="GPS data generator" height="150px">
