@@ -1,6 +1,7 @@
 package navigator
 
 import (
+	"github.com/mmadfox/go-gpsgen/proto"
 	"github.com/mmadfox/go-gpsgen/types"
 )
 
@@ -49,6 +50,101 @@ func New(opts ...Option) (*Navigator, error) {
 	return nav, nil
 }
 
+func (n *Navigator) ToProto() *proto.NavigatorState {
+	protoRoutes := make([]*proto.NavigatorState_Route, len(n.routes))
+	for i := 0; i < len(n.routes); i++ {
+		route := n.routes[i]
+		protoRoute := &proto.NavigatorState_Route{
+			Distance: route.dist,
+			Tracks:   make([]*proto.NavigatorState_Route_Track, len(route.tracks)),
+		}
+		for j := 0; j < len(route.tracks); j++ {
+			protoTrack := &proto.NavigatorState_Route_Track{
+				Segmenets: make([]*proto.NavigatorState_Route_Track_Segment, 0, len(route.tracks[j])),
+			}
+			for s := 0; s < len(route.tracks[j]); s++ {
+				protoSegment := &proto.NavigatorState_Route_Track_Segment{
+					PointA: &proto.NavigatorState_Point{
+						Lat: route.tracks[j][s].pointA.X,
+						Lon: route.tracks[j][s].pointA.Y,
+					},
+					PointB: &proto.NavigatorState_Point{
+						Lat: route.tracks[j][s].pointB.X,
+						Lon: route.tracks[j][s].pointB.Y,
+					},
+					Bearing:  route.tracks[j][s].bearing,
+					Distance: route.tracks[j][s].dist,
+					Rel:      int64(route.tracks[j][s].rel),
+				}
+				protoTrack.Segmenets = append(protoTrack.Segmenets, protoSegment)
+			}
+			protoRoute.Tracks[i] = protoTrack
+		}
+		protoRoutes[i] = protoRoute
+	}
+	nav := &proto.NavigatorState{
+		Routes:          protoRoutes,
+		RouteIndex:      int64(n.routeIndex),
+		TrackIndex:      int64(n.trackIndex),
+		SegmentIndex:    int64(n.segmentIndex),
+		SegmentDistance: n.segmentDistance,
+		CurrentDistance: n.currentDistance,
+		OfflineIndex:    int64(n.offlineIndex),
+		Point: &proto.NavigatorState_Point{
+			Lat: n.point.X,
+			Lon: n.point.Y,
+		},
+		Elevation:     n.elevation.ToProto(),
+		TotalDistance: n.totalDist,
+		SkipOffline:   n.skipOffline,
+	}
+	if n.offline != nil {
+		nav.OfflineMin = int64(n.offline.Min())
+		nav.OfflineMax = int64(n.offline.Max())
+	}
+	return nav
+}
+
+func (n *Navigator) FromProto(nav *proto.NavigatorState) {
+	n.routes = make([]*Route, 0, len(nav.Routes))
+	for i := 0; i < len(nav.Routes); i++ {
+		protoRoute := nav.Routes[i]
+		route := Route{
+			dist:   protoRoute.Distance,
+			tracks: make([][]*Segment, len(protoRoute.Tracks)),
+		}
+		for j := 0; j < len(protoRoute.Tracks); j++ {
+			route.tracks[j] = make([]*Segment, 0, len(protoRoute.Tracks[j].Segmenets))
+			for s := 0; s < len(protoRoute.Tracks[j].Segmenets); s++ {
+				protoSegment := protoRoute.Tracks[j].Segmenets[s]
+				route.tracks[j] = append(route.tracks[j], &Segment{
+					pointA:  Point{X: protoSegment.PointA.Lat, Y: protoSegment.PointA.Lon},
+					pointB:  Point{X: protoSegment.PointB.Lat, Y: protoSegment.PointB.Lon},
+					dist:    protoSegment.Distance,
+					bearing: protoSegment.Bearing,
+					rel:     int(protoSegment.Rel),
+				})
+			}
+		}
+		n.routes = append(n.routes, &route)
+	}
+	n.routeIndex = int(nav.RouteIndex)
+	n.trackIndex = int(nav.TrackIndex)
+	n.segmentIndex = int(nav.SegmentIndex)
+	n.segmentDistance = nav.SegmentDistance
+	n.currentDistance = nav.CurrentDistance
+	n.offlineIndex = int(nav.OfflineIndex)
+	n.point = Point{X: nav.Point.Lat, Y: nav.Point.Lon}
+	n.location = &Location{}
+	n.elevation = new(types.Sensor)
+	n.elevation.FromProto(nav.Elevation)
+	if !nav.SkipOffline {
+		n.offline = types.NewRandom(int(nav.OfflineMin), int(nav.OfflineMax))
+	}
+	n.totalDist = nav.TotalDistance
+	n.skipOffline = nav.SkipOffline
+}
+
 func (n *Navigator) AddRoutes(routes ...*Route) {
 	n.routes = append(n.routes, routes...)
 	n.calcRouteDistance()
@@ -94,6 +190,16 @@ func (n *Navigator) Segment() *Segment {
 
 func (n *Navigator) Route() *Route {
 	return n.routes[n.routeIndex]
+}
+
+func (n *Navigator) AllRoutes() []*Route {
+	routes := make([]*Route, len(n.routes))
+	copy(routes, n.routes)
+	return routes
+}
+
+func (n *Navigator) TotalRoutes() int {
+	return len(n.routes)
 }
 
 func (n *Navigator) TrackIndex() int {

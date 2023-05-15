@@ -19,7 +19,7 @@ func Table(s *gpsgen.State) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetColMinWidth(0, 30)
 	table.SetColMinWidth(1, 30)
-	table.SetColMinWidth(4, 40)
+	table.SetColMinWidth(4, 30)
 	table.SetNewLine("\n")
 
 	table.SetHeader([]string{
@@ -31,7 +31,7 @@ func Table(s *gpsgen.State) {
 	})
 
 	table.Append([]string{
-		model2str(s.Model, s.Descr, s.Props),
+		model2str(s.Model, s.Descr, s.Online, s.Props),
 		location2str(&s.Location),
 		f2s(s.Speed),
 		dist2str(s.Location.TotalDistance, s.Location.CurrentDistance),
@@ -56,10 +56,18 @@ func sensor2str(sensors map[string][2]float64) string {
 	return sb.String()
 }
 
-func model2str(model, descr string, props gpsgen.Properties) string {
+func model2str(model, descr string, online bool, props gpsgen.Properties) string {
 	sb := strings.Builder{}
 	sb.WriteString("Model:")
 	sb.WriteString(model)
+	sb.WriteString("\n")
+	sb.WriteString("Status:")
+	switch online {
+	case true:
+		sb.WriteString("Online")
+	case false:
+		sb.WriteString("Offline")
+	}
 	sb.WriteString("\n")
 	sb.WriteString("Descr:")
 	sb.WriteString(descr)

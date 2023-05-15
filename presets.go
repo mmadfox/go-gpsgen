@@ -9,9 +9,9 @@ func Drone(
 ) (*Device, error) {
 	return NewDevice(
 		WithModel(model),
-		WithSpeed(10, 30, 128),
+		WithSpeed(5, 10, Amplitude128),
 		WithRoutes(route),
-		WithElevation(100, 2500, 128),
+		WithElevation(100, 800, Amplitude128),
 		WithBattery(80, 100),
 		WithOffline(1, 10),
 		WithProps(props),
@@ -28,8 +28,8 @@ func DroneWithSensors(
 	return NewDevice(
 		WithModel(model),
 		WithRoutes(routes),
-		WithSpeed(10, 30, 128),
-		WithElevation(100, 2500, 128),
+		WithSpeed(5, 10, Amplitude512),
+		WithElevation(100, 800, Amplitude128),
 		WithBattery(80, 100),
 		WithSensors(sensors...),
 		WithOffline(1, 10),
@@ -46,8 +46,8 @@ func Tracker(
 	return NewDevice(
 		WithModel(model),
 		WithRoutes(route),
-		WithSpeed(2, 10, 16),
-		WithElevation(1, 150, 16),
+		WithSpeed(1, 3, Amplitude32),
+		WithElevation(1, 150, Amplitude8),
 		WithBattery(1, 100),
 		WithOffline(10, 120),
 		WithProps(props),
@@ -63,7 +63,7 @@ func TrackerWithSensors(
 ) (*Device, error) {
 	return NewDevice(
 		WithModel(model),
-		WithSpeed(2, 10, 16),
+		WithSpeed(1, 3, 16),
 		WithRoutes(routes),
 		WithSensors(sensors...),
 		WithElevation(1, 150, 16),

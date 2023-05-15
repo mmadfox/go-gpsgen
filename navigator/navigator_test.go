@@ -3,6 +3,7 @@ package navigator
 import (
 	"testing"
 
+	"github.com/mmadfox/go-gpsgen/proto"
 	"github.com/stretchr/testify/require"
 )
 
@@ -127,4 +128,143 @@ func TestNavigatorMultiRoutes(t *testing.T) {
 	}
 	require.True(t, (totalDist-curDist) < maxDistance)
 	require.Equal(t, 1, nav.RouteIndex())
+}
+
+func TestNavigatorToProto(t *testing.T) {
+	r1, err := NewRoute([][]Point{
+		{
+			{X: 55.74966429698134, Y: 37.624339525581576},
+			{X: 55.748482140161286, Y: 37.62444198526788},
+		},
+	})
+	require.NoError(t, err)
+	nav, err := New()
+	require.NoError(t, err)
+	nav.AddRoutes(r1)
+	// walk
+	for i := 0; i < 5; i++ {
+		nav.Next(1, 1)
+	}
+	protoNav := nav.ToProto()
+	require.NotNil(t, protoNav)
+
+	require.Equal(t, nav.TotalRoutes(), len(protoNav.Routes))
+	routes := nav.AllRoutes()
+	for i := 0; i < len(routes); i++ {
+		route := routes[i]
+		protoRoute := protoNav.Routes[i]
+		require.Equal(t, route.Distance(), protoRoute.Distance)
+		require.Equal(t, route.NumTracks(), len(protoRoute.Tracks))
+		for j := 0; j < route.NumTracks(); j++ {
+			segmentIndex := 0
+			route.EachSegment(j, func(s *Segment) {
+				protoSegment := protoRoute.Tracks[j].Segmenets[segmentIndex]
+				require.NotNil(t, protoSegment)
+				segmentIndex++
+				require.Equal(t, s.Bearing(), protoSegment.Bearing)
+				require.Equal(t, s.Dist(), protoSegment.Distance)
+				require.Equal(t, s.Rel(), int(protoSegment.Rel))
+				require.Equal(t, s.PointA().X, protoSegment.PointA.Lat)
+				require.Equal(t, s.PointA().Y, protoSegment.PointA.Lon)
+				require.Equal(t, s.PointB().X, protoSegment.PointB.Lat)
+				require.Equal(t, s.PointB().Y, protoSegment.PointB.Lon)
+			})
+		}
+	}
+
+	require.Equal(t, nav.CurrentDistance(), protoNav.CurrentDistance)
+	require.Equal(t, nav.RouteIndex(), int(protoNav.RouteIndex))
+	require.Equal(t, nav.TrackIndex(), int(protoNav.TrackIndex))
+	require.Equal(t, nav.SegmentIndex(), int(protoNav.SegmentIndex))
+	require.Equal(t, nav.offlineIndex, int(protoNav.OfflineIndex))
+	require.Equal(t, nav.CurrentDistance(), protoNav.CurrentDistance)
+	require.Equal(t, nav.point.X, protoNav.Point.Lat)
+	require.Equal(t, nav.point.Y, protoNav.Point.Lon)
+	require.Equal(t, nav.offline.Min(), int(protoNav.OfflineMin))
+	require.Equal(t, nav.offline.Max(), int(protoNav.OfflineMax))
+	require.Equal(t, nav.TotalDistance(), protoNav.TotalDistance)
+	require.NotNil(t, protoNav.Elevation)
+}
+
+func TestNavigatorFromProto(t *testing.T) {
+	protoNav := &proto.NavigatorState{
+		RouteIndex:      1,
+		TrackIndex:      1,
+		SegmentIndex:    1,
+		SegmentDistance: 100,
+		CurrentDistance: 10,
+		OfflineIndex:    3,
+		Point:           &proto.NavigatorState_Point{Lat: 3, Lon: 4},
+		Elevation: &proto.SensorState{
+			Min:  1,
+			Max:  4,
+			ValX: 2,
+			Gen: &proto.Curve{
+				Points: []*proto.Curve_ControlPoint{
+					{
+						Vp: &proto.Curve_Point{X: 1, Y: 2},
+						Cp: &proto.Curve_Point{X: 3, Y: 4},
+					},
+				},
+			},
+		},
+		OfflineMin:    1,
+		OfflineMax:    3,
+		TotalDistance: 300,
+		SkipOffline:   false,
+		Routes: []*proto.NavigatorState_Route{
+			{
+				Distance: 1000,
+				Tracks: []*proto.NavigatorState_Route_Track{
+					{
+						Segmenets: []*proto.NavigatorState_Route_Track_Segment{
+							{
+								PointA:   &proto.NavigatorState_Point{Lat: 1, Lon: 2},
+								PointB:   &proto.NavigatorState_Point{Lat: 3, Lon: 4},
+								Bearing:  5,
+								Distance: 33,
+								Rel:      -1,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	nav := new(Navigator)
+	nav.FromProto(protoNav)
+	require.Equal(t, len(protoNav.Routes), nav.TotalRoutes())
+	routes := nav.AllRoutes()
+	for i := 0; i < len(routes); i++ {
+		route := routes[i]
+		require.Equal(t, protoNav.Routes[i].Distance, route.Distance())
+		require.Equal(t, len(protoNav.Routes[i].Tracks), route.NumTracks())
+		for s := 0; s < len(protoNav.Routes[i].Tracks); s++ {
+			for si := 0; si < len(protoNav.Routes[i].Tracks[s].Segmenets); si++ {
+				protoSeg := protoNav.Routes[i].Tracks[s].Segmenets[si]
+				seg := route.SegmentAt(s, si)
+				require.Equal(t, protoSeg.Bearing, seg.Bearing())
+				require.Equal(t, protoSeg.Distance, seg.Dist())
+				require.Equal(t, protoSeg.PointA.Lat, seg.PointA().X)
+				require.Equal(t, protoSeg.PointA.Lon, seg.PointA().Y)
+				require.Equal(t, protoSeg.PointB.Lat, seg.PointB().X)
+				require.Equal(t, protoSeg.PointB.Lon, seg.PointB().Y)
+				require.Equal(t, int(protoSeg.Rel), seg.Rel())
+			}
+		}
+	}
+	require.Equal(t, int(protoNav.RouteIndex), nav.routeIndex)
+	require.Equal(t, int(protoNav.TrackIndex), nav.trackIndex)
+	require.Equal(t, int(protoNav.SegmentIndex), nav.segmentIndex)
+	require.Equal(t, protoNav.SegmentDistance, nav.segmentDistance)
+	require.Equal(t, protoNav.CurrentDistance, nav.currentDistance)
+	require.Equal(t, int(protoNav.OfflineIndex), nav.offlineIndex)
+	require.Equal(t, protoNav.Point.Lat, nav.point.X)
+	require.Equal(t, protoNav.Point.Lon, nav.point.Y)
+	require.NotNil(t, nav.elevation)
+	require.Equal(t, int(protoNav.OfflineMin), nav.offline.Min())
+	require.Equal(t, int(protoNav.OfflineMax), nav.offline.Max())
+	require.Equal(t, protoNav.TotalDistance, nav.totalDist)
+	require.Equal(t, protoNav.SkipOffline, nav.skipOffline)
 }

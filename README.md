@@ -23,6 +23,7 @@ The library can be used in testing and debugging GPS dependent applications or d
    - [Random](#random)
    - [Static](#static)
    - [Standard](#standard)
++ [Device presets](#device-presets)   
 
 
 ### Examples
@@ -245,6 +246,17 @@ func main() {
 	_ = r1
 }
 ```
+
+### Device Presets
+```go 
+// Drone 
+gpsgen.Drone(model string, props gpsgen.Properties, route ...*navigator.Route) (*gpsgen.Device, error)
+gpsgen.DroneWithSensors( model string, routes []*navigator.Route, props gpsgen.Properties, sensors ...gpsgen.Sensor) (*gpsgen.Device, error)
+
+// Tracker
+gpsgen.Tracker( model string, props gpsgen.Properties, route ...*navigator.Route) (*gpsgen.Device, error)
+gpsgen.TrackerWithSensors( model string, routes []*navigator.Route, props gpsgen.Properties, sensors ...gpsgen.Sensor) (*gpsgen.Device, error)
+``` 
 
 ### Amplitude option example
 The figures show random values from 0 to 120 and control points 4,8,16,32,64,128,256,512

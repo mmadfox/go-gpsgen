@@ -104,6 +104,10 @@ func (r *Route) NumSegments(trackIndex int) int {
 	return len(r.tracks[trackIndex])
 }
 
+func (r *Route) SegmentAt(track int, segment int) *Segment {
+	return r.tracks[track][segment]
+}
+
 func (r *Route) EachSegment(track int, fn func(seg *Segment)) {
 	if track > len(r.tracks) {
 		return
@@ -119,6 +123,10 @@ type Segment struct {
 	dist    float64
 	bearing float64
 	rel     int
+}
+
+func (s *Segment) Rel() int {
+	return s.rel
 }
 
 func (s *Segment) PointA() Point {

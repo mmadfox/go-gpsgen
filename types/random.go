@@ -11,6 +11,16 @@ type Random struct {
 	rnd      *rand.Rand
 }
 
+// Min returns the minimum value.
+func (r *Random) Min() int {
+	return r.min
+}
+
+// Max returns the maximum value.
+func (r *Random) Max() int {
+	return r.max
+}
+
 // Value generates and returns a random integer value within the range specified by min and max.
 func (r *Random) Value() int {
 	return r.rnd.Intn(r.max-r.min) + r.min

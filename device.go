@@ -88,11 +88,43 @@ func NewDevice(settings ...DeviceSetting) (*Device, error) {
 	return device, nil
 }
 
-func (d *Device) MarshalJSON() ([]byte, error) {
-	return nil, nil
+func (d *Device) MarshalBinary() ([]byte, error) {
+	protoDev := &pb.DeviceSnapshot{
+		Id:        d.id[:],
+		Model:     d.model.String(),
+		Speed:     d.speed.ToProto(),
+		Battery:   d.battery.ToProto(),
+		Sensors:   make([]*pb.SensorState, len(d.sensors)),
+		Navigator: d.navigator.ToProto(),
+		Loop:      d.loop,
+		AvgTick:   d.avgTicks,
+	}
+	for i := 0; i < len(d.sensors); i++ {
+		protoDev.Sensors[i] = d.sensors[i].ToProto()
+	}
+	return proto.Marshal(protoDev)
 }
 
-func (d *Device) UnmarshalJSON(data []byte) error {
+func (d *Device) UnmarshalBinary(data []byte) error {
+	protoDev := new(pb.DeviceSnapshot)
+	if err := proto.Unmarshal(data, protoDev); err != nil {
+		return err
+	}
+	d.id = uuid.UUID(protoDev.Id)
+	d.model, _ = types.NewModel(protoDev.Model)
+	d.speed = new(types.Speed)
+	d.speed.FromProto(protoDev.Speed)
+	d.battery = new(types.Battery)
+	d.battery.FromProto(protoDev.Battery)
+	d.sensors = make([]*types.Sensor, len(protoDev.Sensors))
+	for i := 0; i < len(protoDev.Sensors); i++ {
+		d.sensors[i] = new(types.Sensor)
+		d.sensors[i].FromProto(protoDev.Sensors[i])
+	}
+	d.navigator = new(navigator.Navigator)
+	d.navigator.FromProto(protoDev.Navigator)
+	d.loop = protoDev.Loop
+	d.avgTicks = protoDev.AvgTick
 	return nil
 }
 
