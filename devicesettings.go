@@ -1,6 +1,8 @@
 package gpsgen
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/mmadfox/go-gpsgen/navigator"
 	"github.com/mmadfox/go-gpsgen/route"
@@ -138,13 +140,18 @@ func (ds *deviceSettings) applyFor(d *Device) (err error) {
 		}
 	}
 	if len(ds.routes) > 0 {
+		for i := 0; i < len(ds.routes); i++ {
+			if ds.routes[i] == nil {
+				return fmt.Errorf("invalid route for this device")
+			}
+		}
 		d.navigator.AddRoutes(ds.routes...)
 	} else {
-		defaultRoute, err := route.Generate()
+		defaultRoute, err := route.RoutesForRussia()
 		if err != nil {
 			return err
 		}
-		d.navigator.AddRoute(defaultRoute)
+		d.navigator.AddRoutes(defaultRoute...)
 	}
 	return nil
 }

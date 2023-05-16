@@ -78,7 +78,7 @@ func (n *Navigator) ToProto() *proto.NavigatorState {
 				}
 				protoTrack.Segmenets = append(protoTrack.Segmenets, protoSegment)
 			}
-			protoRoute.Tracks[i] = protoTrack
+			protoRoute.Tracks[j] = protoTrack
 		}
 		protoRoutes[i] = protoRoute
 	}

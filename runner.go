@@ -16,6 +16,19 @@ type runner struct {
 	interval  time.Duration
 }
 
+func NextTick(d ...*Device) {
+	if len(d) == 0 {
+		return
+	}
+	if len(d) == 1 {
+		d[0].nextTick(1)
+		return
+	}
+	for i := 0; i < len(d); i++ {
+		d[i].nextTick(1)
+	}
+}
+
 func WithInterval(dur time.Duration) Option {
 	return func(r *runner) {
 		r.interval = dur

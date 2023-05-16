@@ -11,6 +11,50 @@ import (
 
 var randRoute = rand.New(rand.NewSource(time.Now().UnixNano()))
 
+func RoutesForAngola() ([]*navigator.Route, error) {
+	return routesFor(Angola)
+}
+
+func RoutesForSouthArabia() ([]*navigator.Route, error) {
+	return routesFor(SouthArabia)
+}
+
+func RoutesForTurkey() ([]*navigator.Route, error) {
+	return routesFor(Turkey)
+}
+
+func RoutesForRussia() ([]*navigator.Route, error) {
+	return routesFor(Russia)
+}
+
+func RoutesForFrance() ([]*navigator.Route, error) {
+	return routesFor(France)
+}
+
+func RoutesForSpain() ([]*navigator.Route, error) {
+	return routesFor(Spain)
+}
+
+func RoutesForChina() ([]*navigator.Route, error) {
+	return routesFor(Spain)
+}
+
+func routesFor(c Country) ([]*navigator.Route, error) {
+	r1, err := GenerateFor(c)
+	if err != nil {
+		return nil, err
+	}
+	r2, err := GenerateFor(c)
+	if err != nil {
+		return nil, err
+	}
+	r3, err := GenerateFor(c)
+	if err != nil {
+		return nil, err
+	}
+	return []*navigator.Route{r1, r2, r3}, nil
+}
+
 func Generate() (*navigator.Route, error) {
 	country := countries[randRoute.Intn(len(countries))]
 	return generate(country)

@@ -121,7 +121,7 @@ $ go get github.com/mmadfox/go-gpsgen
 | With Description | Short description of the device |
 
 ### Routes
-A route for a GPX generator is a given path or a sequence of points on the map that determines the planned or fixed movement of the geotracker.
+A route for a GPS generator is a given path or a sequence of points on the map that determines the planned or fixed movement of the geotracker.
 
 #### GeoJSON
 ```go
@@ -262,11 +262,11 @@ gpsgen.TrackerWithSensors( model string, routes []*navigator.Route, props gpsgen
 The figures show random values from 0 to 120 and control points 4,8,16,32,64,128,256,512
 
 
-<img src="./.github/amplitudes/4.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/8.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/16.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/32.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/64.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/128.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/256.png" alt="GPS data generator" height="250px">
-<img src="./.github/amplitudes/512.png" alt="GPS data generator" height="250px">
+<img src="./.github/amplitudes/4.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/8.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/16.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/32.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/64.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/128.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/256.png" alt="GPS data generator" height="150px">
+<img src="./.github/amplitudes/512.png" alt="GPS data generator" height="150px">

@@ -22,9 +22,10 @@ func main() {
 	}
 
 	tbsSensor := gpsgen.Sensor{
-		Name: "TBS-09-87-11",
-		Min:  0.1,
-		Max:  0.9,
+		Name:      "TBS-09-87-11",
+		Min:       0.1,
+		Max:       0.9,
+		Amplitude: gpsgen.Amplitude16,
 	}
 
 	myDrone, err := gpsgen.DroneWithSensors("MyDrone-Tx4501", route1, props, tbsSensor)

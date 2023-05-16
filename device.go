@@ -1,6 +1,7 @@
 package gpsgen
 
 import (
+	"fmt"
 	"math"
 	"sync"
 
@@ -13,6 +14,9 @@ import (
 
 type Device struct {
 	id            uuid.UUID
+	userID        string
+	props         Properties
+	descr         string
 	model         types.Model
 	speed         *types.Speed
 	battery       *types.Battery
@@ -62,17 +66,16 @@ func NewDevice(settings ...DeviceSetting) (*Device, error) {
 
 	device := &Device{
 		id:        deviceID,
+		userID:    opts.userID,
+		props:     opts.props,
+		descr:     opts.descr,
 		navigator: nav,
 		stateCh:   make(chan *State, 1),
 		readyCh:   make(chan struct{}, 1),
 		pool: &sync.Pool{
 			New: func() any {
 				return &State{
-					ID:      deviceID,
-					UserID:  opts.userID,
-					Props:   opts.props,
-					Descr:   opts.descr,
-					Sensors: make(map[string][2]float64, len(opts.sensors)),
+					Sensors: make(map[string][2]float64, 0),
 				}
 			},
 		},
@@ -88,16 +91,32 @@ func NewDevice(settings ...DeviceSetting) (*Device, error) {
 	return device, nil
 }
 
+func (d *Device) ID() uuid.UUID {
+	return d.id
+}
+
+func (d *Device) State() *State {
+	state := new(State)
+	d.fillState(state)
+	return state
+}
+
 func (d *Device) MarshalBinary() ([]byte, error) {
 	protoDev := &pb.DeviceSnapshot{
-		Id:        d.id[:],
-		Model:     d.model.String(),
-		Speed:     d.speed.ToProto(),
-		Battery:   d.battery.ToProto(),
-		Sensors:   make([]*pb.SensorState, len(d.sensors)),
-		Navigator: d.navigator.ToProto(),
-		Loop:      d.loop,
-		AvgTick:   d.avgTicks,
+		Id:          d.id[:],
+		Model:       d.model.String(),
+		Speed:       d.speed.ToProto(),
+		Battery:     d.battery.ToProto(),
+		Sensors:     make([]*pb.SensorState, len(d.sensors)),
+		Navigator:   d.navigator.ToProto(),
+		Loop:        d.loop,
+		AvgTick:     d.avgTicks,
+		UserId:      d.userID,
+		Description: d.descr,
+		Properties:  make(Properties, len(d.props)),
+	}
+	for k, v := range d.props {
+		protoDev.Properties[k] = v
 	}
 	for i := 0; i < len(d.sensors); i++ {
 		protoDev.Sensors[i] = d.sensors[i].ToProto()
@@ -109,6 +128,9 @@ func (d *Device) UnmarshalBinary(data []byte) error {
 	protoDev := new(pb.DeviceSnapshot)
 	if err := proto.Unmarshal(data, protoDev); err != nil {
 		return err
+	}
+	if protoDev.Navigator == nil {
+		return fmt.Errorf("invalid device snapshot data")
 	}
 	d.id = uuid.UUID(protoDev.Id)
 	d.model, _ = types.NewModel(protoDev.Model)
@@ -125,6 +147,21 @@ func (d *Device) UnmarshalBinary(data []byte) error {
 	d.navigator.FromProto(protoDev.Navigator)
 	d.loop = protoDev.Loop
 	d.avgTicks = protoDev.AvgTick
+	d.userID = protoDev.UserId
+	d.props = make(Properties, len(protoDev.Properties))
+	for k, v := range protoDev.Properties {
+		d.props[k] = v
+	}
+	d.descr = protoDev.Description
+	d.stateCh = make(chan *State, 1)
+	d.readyCh = make(chan struct{}, 1)
+	d.pool = &sync.Pool{
+		New: func() any {
+			return &State{
+				Sensors: make(map[string][2]float64, 0),
+			}
+		},
+	}
 	return nil
 }
 
@@ -143,10 +180,6 @@ func (d *Device) handleChange() {
 }
 
 type Properties map[string]string
-
-func (d *Device) ID() uuid.UUID {
-	return d.id
-}
 
 func (d *Device) nextTick(tick float64) bool {
 	if !d.navigator.IsOnline() {
@@ -210,12 +243,29 @@ func (d *Device) fillState(state *State) {
 	state.Tick = d.loop
 	state.Online = d.navigator.IsOnline()
 	state.Location = d.navigator.Location()
+	if state.Sensors == nil {
+		state.Sensors = make(map[string][2]float64, len(d.sensors))
+	}
+	if d.props != nil {
+		if state.Props == nil {
+			state.Props = make(Properties, len(d.props))
+		}
+		for k, v := range d.props {
+			state.Props[k] = v
+		}
+	}
 	for i := 0; i < len(d.sensors); i++ {
 		sensor := d.sensors[i]
 		state.Sensors[sensor.Name()] = [2]float64{
 			sensor.ValueX(),
 			sensor.ValueY(),
 		}
+	}
+	if len(state.UserID) == 0 {
+		state.UserID = d.userID
+	}
+	if len(state.Descr) == 0 {
+		state.Descr = d.descr
 	}
 }
 

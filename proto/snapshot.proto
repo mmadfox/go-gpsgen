@@ -13,6 +13,9 @@ message DeviceSnapshot {
     NavigatorState navigator = 6;
     double loop = 7;
     double avg_tick = 8;  
+    map<string, string> properties = 9; 
+    string description = 10;
+    string user_id = 11;
 }
 
 message NavigatorState {

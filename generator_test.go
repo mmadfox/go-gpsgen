@@ -5,13 +5,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mmadfox/go-gpsgen/route"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGenerator(t *testing.T) {
+	routes, err := route.RoutesForChina()
+	require.NoError(t, err)
+
 	gen := New(WithInterval(100 * time.Millisecond))
 
-	d1, err := Drone("Tx", nil, nil)
+	d1, err := Drone("Tx", nil, routes...)
 	require.NoError(t, err)
 
 	var tick uint32
