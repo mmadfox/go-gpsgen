@@ -11,32 +11,59 @@ import (
 
 var randRoute = rand.New(rand.NewSource(time.Now().UnixNano()))
 
+// RoutesForAngola generates three random routes for the country Angola.
+// It returns the generated routes and any error encountered during the process.
 func RoutesForAngola() ([]*navigator.Route, error) {
 	return routesFor(Angola)
 }
 
+// RoutesForSouthArabia generates three random routes for the country SouthArabia.
+// It returns the generated routes and any error encountered during the process.
 func RoutesForSouthArabia() ([]*navigator.Route, error) {
 	return routesFor(SouthArabia)
 }
 
+// RoutesForTurkey generates three random routes for the country Turkey.
+// It returns the generated routes and any error encountered during the process.
 func RoutesForTurkey() ([]*navigator.Route, error) {
 	return routesFor(Turkey)
 }
 
+// RoutesForRussia generates three random routes for the country Russia.
+// It returns the generated routes and any error encountered during the process.
 func RoutesForRussia() ([]*navigator.Route, error) {
 	return routesFor(Russia)
 }
 
+// RoutesForFrance generates three random routes for the country France.
+// It returns the generated routes and any error encountered during the process.
 func RoutesForFrance() ([]*navigator.Route, error) {
 	return routesFor(France)
 }
 
+// RoutesForSpain generates three random routes for the country Spain.
+// It returns the generated routes and any error encountered during the process.
 func RoutesForSpain() ([]*navigator.Route, error) {
 	return routesFor(Spain)
 }
 
+// RoutesForChina generates three random routes for the country China.
+// It returns the generated routes and any error encountered during the process.
 func RoutesForChina() ([]*navigator.Route, error) {
-	return routesFor(Spain)
+	return routesFor(China)
+}
+
+// Generate randomly selects a country from the list of countries and calls the generate function
+// to generate a random route for that country. It returns the generated route and any error encountered.
+func Generate() (*navigator.Route, error) {
+	country := countries[randRoute.Intn(len(countries))]
+	return generate(country)
+}
+
+// GenerateFor takes a country as a parameter and
+// calls the generate a single route for the specified country.
+func GenerateFor(c Country) (*navigator.Route, error) {
+	return generate(c)
 }
 
 func routesFor(c Country) ([]*navigator.Route, error) {
@@ -53,15 +80,6 @@ func routesFor(c Country) ([]*navigator.Route, error) {
 		return nil, err
 	}
 	return []*navigator.Route{r1, r2, r3}, nil
-}
-
-func Generate() (*navigator.Route, error) {
-	country := countries[randRoute.Intn(len(countries))]
-	return generate(country)
-}
-
-func GenerateFor(c Country) (*navigator.Route, error) {
-	return generate(c)
 }
 
 func generate(country Country) (*navigator.Route, error) {

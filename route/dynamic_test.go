@@ -3,8 +3,26 @@ package route
 import (
 	"testing"
 
+	"github.com/mmadfox/go-gpsgen/navigator"
 	"github.com/stretchr/testify/require"
 )
+
+func TestGenerateRoutes(t *testing.T) {
+	funcs := []func() ([]*navigator.Route, error){
+		RoutesForAngola,
+		RoutesForSouthArabia,
+		RoutesForTurkey,
+		RoutesForRussia,
+		RoutesForFrance,
+		RoutesForSpain,
+		RoutesForChina,
+	}
+	for i := 0; i < len(funcs); i++ {
+		routes, err := funcs[i]()
+		require.NoError(t, err)
+		require.Len(t, routes, 3)
+	}
+}
 
 func TestGenerate(t *testing.T) {
 	for i := 0; i < 1000; i++ {
