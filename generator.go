@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Option functions are used to configure the behavior of the underlying
+// Option uses to configure the behavior of the underlying
 // runner instances when creating a new Generator instance.
 type Option func(*runner)
 
@@ -21,7 +21,8 @@ type Generator struct {
 	once    sync.Once
 }
 
-// New constructor function for creating a new Generator instance.
+// New creates a new Generator instance.
+//
 // It accepts Option arguments to configure the underlying runner instances.
 // It creates a slice of runner instances with a length equal to the number of available CPUs.
 func New(opts ...Option) *Generator {
