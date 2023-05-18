@@ -12,6 +12,9 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// The Device struct represents a device and contains information
+// about the device's properties, description, model, speed,
+// battery, sensors, navigator, and various other fields.
 type Device struct {
 	id            uuid.UUID
 	userID        string
@@ -30,6 +33,8 @@ type Device struct {
 	pool          *sync.Pool
 }
 
+// The State struct represents the state of a device.
+// It contains fields that provide information about the device's state.
 type State struct {
 	ID       uuid.UUID             `json:"id"`
 	Tick     float64               `json:"tick"`
@@ -44,6 +49,11 @@ type State struct {
 	Online   bool                  `json:"online"`
 }
 
+// Properties describes custom device characteristics.
+type Properties map[string]string
+
+// NewDevice creates a new instance of the Device struct with the given settings.
+// It applies the provided settings to the device and returns a pointer to the created Device and an error, if any.
 func NewDevice(settings ...DeviceSetting) (*Device, error) {
 	opts := defaultSettings()
 	for i := 0; i < len(settings); i++ {
@@ -91,16 +101,20 @@ func NewDevice(settings ...DeviceSetting) (*Device, error) {
 	return device, nil
 }
 
+// ID returns the unique identifier of the device.
 func (d *Device) ID() uuid.UUID {
 	return d.id
 }
 
+// State returns a State object filled with the current state of the device.
 func (d *Device) State() *State {
 	state := new(State)
 	d.fillState(state)
 	return state
 }
 
+// MarshalBinary serializes the Device struct into a binary representation using Protocol Buffers.
+// The method marshals the proto.DeviceSnapshot object into a byte slice using Protocol Buffers' proto.Marshal function.
 func (d *Device) MarshalBinary() ([]byte, error) {
 	protoDev := &pb.DeviceSnapshot{
 		Id:          d.id[:],
@@ -124,6 +138,9 @@ func (d *Device) MarshalBinary() ([]byte, error) {
 	return proto.Marshal(protoDev)
 }
 
+// UnmarshalBinary deserializes a binary representation of a Device from a byte slice.
+// The method unmarshals the binary data into a proto.DeviceSnapshot object and assigns
+// the values to the corresponding fields of the Device struct.
 func (d *Device) UnmarshalBinary(data []byte) error {
 	protoDev := new(pb.DeviceSnapshot)
 	if err := proto.Unmarshal(data, protoDev); err != nil {
@@ -178,8 +195,6 @@ func (d *Device) handleChange() {
 		d.readyCh <- struct{}{}
 	}
 }
-
-type Properties map[string]string
 
 func (d *Device) nextTick(tick float64) bool {
 	if !d.navigator.IsOnline() {

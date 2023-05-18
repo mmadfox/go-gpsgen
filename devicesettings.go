@@ -9,32 +9,51 @@ import (
 	"github.com/mmadfox/go-gpsgen/types"
 )
 
+// DeviceSetting functions modify a Device
+// by applying specific configurations or settings.
 type DeviceSetting func(*deviceSettings)
 
+// Sensor represents a custom sensor with its associated properties.
+//
+// The sensor generates data from the minimum to the maximum value along the bezier curve,
+// taking into account the control points that are specified in the amplitude parameter.
+//
+// Amplitude is the number of control points on the bezier curve from 4 to 512.
+type Sensor struct {
+	Name      string  // specifies the name or identifier of the sensor.
+	Min, Max  float64 // indicates the minimum and maximum value that the sensor can produce.
+	Amplitude int     // specifies the amplitude or range of the sensor's values from 4 to 512
+}
+
+// WithModel sets the model of the device.
 func WithModel(model string) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.model = model
 	}
 }
 
+// WithUserID sets the userID of the device.
 func WithUserID(userID string) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.userID = userID
 	}
 }
 
+// WithRoutes appends the provided routes to the existing routes in the device.
 func WithRoutes(routes []*navigator.Route) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.routes = append(ds.routes, routes...)
 	}
 }
 
+// WithRoute appends a single route to the existing routes in the device.
 func WithRoute(route *navigator.Route) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.routes = append(ds.routes, route)
 	}
 }
 
+// WithSpeed sets the minimum, maximum, and amplitude speed value in the device.
 func WithSpeed(min, max float64, amplitude int) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.speed.min = min
@@ -43,6 +62,7 @@ func WithSpeed(min, max float64, amplitude int) DeviceSetting {
 	}
 }
 
+// WithBattery sets the minimum and maximum battery values in the device.
 func WithBattery(min, max float64) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.battery.min = min
@@ -50,12 +70,14 @@ func WithBattery(min, max float64) DeviceSetting {
 	}
 }
 
+// WithSensors appends the provided sensors to the existing sensors in the device.
 func WithSensors(sensor ...Sensor) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.sensors = append(ds.sensors, sensor...)
 	}
 }
 
+// WithElevation sets the minimum, maximum, and amplitude of the elevation in the device.
 func WithElevation(min, max float64, amplitude int) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.elevation.min, ds.elevation.max = min, max
@@ -63,24 +85,28 @@ func WithElevation(min, max float64, amplitude int) DeviceSetting {
 	}
 }
 
+// WithOffline sets the minimum and maximum offline values in the device.
 func WithOffline(min, max int) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.offline.min, ds.offline.max = min, max
 	}
 }
 
+// WithProps sets the properties in the device.
 func WithProps(props Properties) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.props = props
 	}
 }
 
+// WithDescription sets the description in the device.
 func WithDescritpion(descr string) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.descr = descr
 	}
 }
 
+// Routes takes one or more *navigator.Route arguments and returns a []*navigator.Route.
 func Routes(route ...*navigator.Route) []*navigator.Route {
 	return append([]*navigator.Route{}, route...)
 }
@@ -154,12 +180,6 @@ func (ds *deviceSettings) applyFor(d *Device) (err error) {
 		d.navigator.AddRoutes(defaultRoute...)
 	}
 	return nil
-}
-
-type Sensor struct {
-	Name      string
-	Min, Max  float64
-	Amplitude int
 }
 
 type rangeFloatVal struct {

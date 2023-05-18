@@ -24,6 +24,7 @@ Language: [En](./README.md)
   - [Статичные](#cтатичный)
   - [Стандартный](#стандартный)
 + [Пресеты устройств](#пресеты-устройств)  
++ [Настройка amplitude](#пример-amplitude-option)
 
 
 ### Примеры
@@ -250,6 +251,9 @@ gpsgen.Tracker( model string, props gpsgen.Properties, route ...*navigator.Route
 gpsgen.TrackerWithSensors( model string, routes []*navigator.Route, props gpsgen.Properties, sensors ...gpsgen.Sensor) (*gpsgen.Device, error)
 ``` 
 ### Пример amplitude option
+Все датчики формируют данные от минимального до максимального значения по кривой Безье с учетом контрольных точек, которые указаны в параметре амплитуды.
+Амплитуда – это количество контрольных точек на кривой Безье от 4 до 512.
+
 На рисунках представлены рандомные значения от 0 до 120 и контрольные точки 4,8,16,32,64,128,256,512
 
 <img src="./.github/amplitudes/4.png" alt="GPS data generator" height="150px">

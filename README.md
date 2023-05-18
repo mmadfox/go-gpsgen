@@ -24,6 +24,7 @@ The library can be used in testing and debugging GPS dependent applications or d
    - [Static](#static)
    - [Standard](#standard)
 + [Device presets](#device-presets)   
++ [Amplitude option example](#amplitude-option-example)
 
 
 ### Examples
@@ -259,6 +260,9 @@ gpsgen.TrackerWithSensors( model string, routes []*navigator.Route, props gpsgen
 ``` 
 
 ### Amplitude option example
+All sensors generates data from the minimum to the maximum value along the bezier curve, taking into account the control points that are specified in the amplitude parameter.
+Amplitude is the number of control points on the bezier curve from 4 to 512.
+
 The figures show random values from 0 to 120 and control points 4,8,16,32,64,128,256,512
 
 
