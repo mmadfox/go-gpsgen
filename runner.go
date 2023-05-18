@@ -1,6 +1,7 @@
 package gpsgen
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -55,6 +56,16 @@ func (r *runner) attach(d *Device) {
 	}
 	go d.handleChange()
 	r.devices[d.ID()] = d
+}
+
+func (r *runner) lookup(id uuid.UUID) (*Device, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	dev, ok := r.devices[id]
+	if !ok {
+		return nil, fmt.Errorf("gpsgen: device %s not found", id)
+	}
+	return dev, nil
 }
 
 func (r *runner) detach(id uuid.UUID) {

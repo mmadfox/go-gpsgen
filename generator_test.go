@@ -32,3 +32,39 @@ func TestGenerator(t *testing.T) {
 
 	require.GreaterOrEqual(t, uint32(5), atomic.LoadUint32(&tick))
 }
+
+func TestGeneratorControl(t *testing.T) {
+	routes, err := route.RoutesForFrance()
+	require.NoError(t, err)
+
+	var isClosed bool
+	gen := New(WithInterval(100 * time.Millisecond))
+	gen.OnClose = func() {
+		isClosed = true
+	}
+	gen.Run()
+
+	t.Run("generator", func(t *testing.T) {
+		t.Parallel()
+		dev, err := Drone("myDrone", nil, routes...)
+		require.NoError(t, err)
+
+		// attach
+		gen.Attach(dev)
+		dev, err = gen.Lookup(dev.ID())
+		require.NoError(t, err)
+		require.NotNil(t, dev)
+
+		// detach
+		gen.Detach(dev.ID())
+
+		// lookup
+		dev, err = gen.Lookup(dev.ID())
+		require.Error(t, err)
+		require.Nil(t, dev)
+
+		// close
+		gen.Close()
+		require.True(t, isClosed)
+	})
+}
