@@ -194,7 +194,7 @@ func TestNavigatorFromProto(t *testing.T) {
 		SegmentDistance: 100,
 		CurrentDistance: 10,
 		OfflineIndex:    3,
-		Point:           &proto.NavigatorState_Point{Lat: 3, Lon: 4},
+		Point:           &proto.Point{Lat: 3, Lon: 4},
 		Elevation: &proto.SensorState{
 			Min:  1,
 			Max:  4,
@@ -212,15 +212,15 @@ func TestNavigatorFromProto(t *testing.T) {
 		OfflineMax:    3,
 		TotalDistance: 300,
 		SkipOffline:   false,
-		Routes: []*proto.NavigatorState_Route{
+		Routes: []*proto.Route{
 			{
 				Distance: 1000,
-				Tracks: []*proto.NavigatorState_Route_Track{
+				Tracks: []*proto.Route_Track{
 					{
-						Segmenets: []*proto.NavigatorState_Route_Track_Segment{
+						Segmenets: []*proto.Route_Track_Segment{
 							{
-								PointA:   &proto.NavigatorState_Point{Lat: 1, Lon: 2},
-								PointB:   &proto.NavigatorState_Point{Lat: 3, Lon: 4},
+								PointA:   &proto.Point{Lat: 1, Lon: 2},
+								PointB:   &proto.Point{Lat: 3, Lon: 4},
 								Bearing:  5,
 								Distance: 33,
 								Rel:      -1,

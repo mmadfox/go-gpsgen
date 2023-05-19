@@ -19,27 +19,6 @@ message DeviceSnapshot {
 }
 
 message NavigatorState {
-   message Point {
-       double lat = 1; 
-       double lon = 2;
-   }
-
-   message Route {
-       message Track {
-            message Segment {
-                Point point_a = 1; 
-                Point point_b = 2; 
-                double distance = 3;
-                double bearing = 4;
-                int64 rel = 5;
-            }
-            repeated Segment segmenets = 1;
-      }
-
-      double distance = 1;
-      repeated Track tracks = 2;
-   }
-
    repeated Route routes = 1;
    int64 route_index = 2; 
    int64 track_index = 3;
@@ -84,4 +63,28 @@ message Curve {
 
    repeated ControlPoint points = 1; 
    int64 mode = 2;
+}
+
+ message Point {
+    double lat = 1; 
+    double lon = 2;
+ }
+
+ message Route {
+    message Track {
+        message Segment {
+            Point point_a = 1; 
+            Point point_b = 2; 
+            double distance = 3;
+            double bearing = 4;
+            int64 rel = 5;
+        }
+        repeated Segment segmenets = 1;
+    }
+    double distance = 1;
+    repeated Track tracks = 2;
+}
+
+message Routes {
+    repeated Route routes = 1;
 }

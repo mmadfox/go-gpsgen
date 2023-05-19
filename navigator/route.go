@@ -2,6 +2,8 @@ package navigator
 
 import (
 	"errors"
+
+	"github.com/mmadfox/go-gpsgen/proto"
 )
 
 var (
@@ -114,6 +116,54 @@ func (r *Route) EachSegment(track int, fn func(seg *Segment)) {
 	}
 	for j := 0; j < len(r.tracks[track]); j++ {
 		fn(r.tracks[track][j])
+	}
+}
+
+func (r *Route) ToProto() *proto.Route {
+	protoRoute := &proto.Route{
+		Distance: r.dist,
+		Tracks:   make([]*proto.Route_Track, len(r.tracks)),
+	}
+	for j := 0; j < len(r.tracks); j++ {
+		protoTrack := &proto.Route_Track{
+			Segmenets: make([]*proto.Route_Track_Segment, 0, len(r.tracks[j])),
+		}
+		for s := 0; s < len(r.tracks[j]); s++ {
+			protoSegment := &proto.Route_Track_Segment{
+				PointA: &proto.Point{
+					Lat: r.tracks[j][s].pointA.X,
+					Lon: r.tracks[j][s].pointA.Y,
+				},
+				PointB: &proto.Point{
+					Lat: r.tracks[j][s].pointB.X,
+					Lon: r.tracks[j][s].pointB.Y,
+				},
+				Bearing:  r.tracks[j][s].bearing,
+				Distance: r.tracks[j][s].dist,
+				Rel:      int64(r.tracks[j][s].rel),
+			}
+			protoTrack.Segmenets = append(protoTrack.Segmenets, protoSegment)
+		}
+		protoRoute.Tracks[j] = protoTrack
+	}
+	return protoRoute
+}
+
+func (r *Route) FromProto(route *proto.Route) {
+	r.dist = route.Distance
+	r.tracks = make([][]*Segment, len(route.Tracks))
+	for j := 0; j < len(route.Tracks); j++ {
+		r.tracks[j] = make([]*Segment, 0, len(route.Tracks[j].Segmenets))
+		for s := 0; s < len(route.Tracks[j].Segmenets); s++ {
+			protoSegment := route.Tracks[j].Segmenets[s]
+			r.tracks[j] = append(r.tracks[j], &Segment{
+				pointA:  Point{X: protoSegment.PointA.Lat, Y: protoSegment.PointA.Lon},
+				pointB:  Point{X: protoSegment.PointB.Lat, Y: protoSegment.PointB.Lon},
+				dist:    protoSegment.Distance,
+				bearing: protoSegment.Bearing,
+				rel:     int(protoSegment.Rel),
+			})
+		}
 	}
 }
 

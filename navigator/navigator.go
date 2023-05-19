@@ -51,36 +51,9 @@ func New(opts ...Option) (*Navigator, error) {
 }
 
 func (n *Navigator) ToProto() *proto.NavigatorState {
-	protoRoutes := make([]*proto.NavigatorState_Route, len(n.routes))
+	protoRoutes := make([]*proto.Route, len(n.routes))
 	for i := 0; i < len(n.routes); i++ {
-		route := n.routes[i]
-		protoRoute := &proto.NavigatorState_Route{
-			Distance: route.dist,
-			Tracks:   make([]*proto.NavigatorState_Route_Track, len(route.tracks)),
-		}
-		for j := 0; j < len(route.tracks); j++ {
-			protoTrack := &proto.NavigatorState_Route_Track{
-				Segmenets: make([]*proto.NavigatorState_Route_Track_Segment, 0, len(route.tracks[j])),
-			}
-			for s := 0; s < len(route.tracks[j]); s++ {
-				protoSegment := &proto.NavigatorState_Route_Track_Segment{
-					PointA: &proto.NavigatorState_Point{
-						Lat: route.tracks[j][s].pointA.X,
-						Lon: route.tracks[j][s].pointA.Y,
-					},
-					PointB: &proto.NavigatorState_Point{
-						Lat: route.tracks[j][s].pointB.X,
-						Lon: route.tracks[j][s].pointB.Y,
-					},
-					Bearing:  route.tracks[j][s].bearing,
-					Distance: route.tracks[j][s].dist,
-					Rel:      int64(route.tracks[j][s].rel),
-				}
-				protoTrack.Segmenets = append(protoTrack.Segmenets, protoSegment)
-			}
-			protoRoute.Tracks[j] = protoTrack
-		}
-		protoRoutes[i] = protoRoute
+		protoRoutes[i] = n.routes[i].ToProto()
 	}
 	nav := &proto.NavigatorState{
 		Routes:          protoRoutes,
@@ -90,7 +63,7 @@ func (n *Navigator) ToProto() *proto.NavigatorState {
 		SegmentDistance: n.segmentDistance,
 		CurrentDistance: n.currentDistance,
 		OfflineIndex:    int64(n.offlineIndex),
-		Point: &proto.NavigatorState_Point{
+		Point: &proto.Point{
 			Lat: n.point.X,
 			Lon: n.point.Y,
 		},
@@ -109,24 +82,9 @@ func (n *Navigator) FromProto(nav *proto.NavigatorState) {
 	n.routes = make([]*Route, 0, len(nav.Routes))
 	for i := 0; i < len(nav.Routes); i++ {
 		protoRoute := nav.Routes[i]
-		route := Route{
-			dist:   protoRoute.Distance,
-			tracks: make([][]*Segment, len(protoRoute.Tracks)),
-		}
-		for j := 0; j < len(protoRoute.Tracks); j++ {
-			route.tracks[j] = make([]*Segment, 0, len(protoRoute.Tracks[j].Segmenets))
-			for s := 0; s < len(protoRoute.Tracks[j].Segmenets); s++ {
-				protoSegment := protoRoute.Tracks[j].Segmenets[s]
-				route.tracks[j] = append(route.tracks[j], &Segment{
-					pointA:  Point{X: protoSegment.PointA.Lat, Y: protoSegment.PointA.Lon},
-					pointB:  Point{X: protoSegment.PointB.Lat, Y: protoSegment.PointB.Lon},
-					dist:    protoSegment.Distance,
-					bearing: protoSegment.Bearing,
-					rel:     int(protoSegment.Rel),
-				})
-			}
-		}
-		n.routes = append(n.routes, &route)
+		route := new(Route)
+		route.FromProto(protoRoute)
+		n.routes = append(n.routes, route)
 	}
 	n.routeIndex = int(nav.RouteIndex)
 	n.trackIndex = int(nav.TrackIndex)
