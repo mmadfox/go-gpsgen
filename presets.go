@@ -15,7 +15,7 @@ func Drone(
 		WithBattery(80, 100),
 		WithOffline(1, 10),
 		WithProps(props),
-		WithDescritpion("Drone"),
+		WithDescription("Drone"),
 	)
 }
 
@@ -34,7 +34,7 @@ func DroneWithSensors(
 		WithSensors(sensors...),
 		WithOffline(1, 10),
 		WithProps(props),
-		WithDescritpion("Drone"),
+		WithDescription("Drone"),
 	)
 }
 
@@ -51,7 +51,7 @@ func Tracker(
 		WithBattery(1, 100),
 		WithOffline(10, 120),
 		WithProps(props),
-		WithDescritpion("Tracker"),
+		WithDescription("Tracker"),
 	)
 }
 
@@ -70,6 +70,6 @@ func TrackerWithSensors(
 		WithBattery(1, 100),
 		WithOffline(10, 120),
 		WithProps(props),
-		WithDescritpion("Tracker"),
+		WithDescription("Tracker"),
 	)
 }

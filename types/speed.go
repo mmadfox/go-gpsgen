@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	maxSpeedVal = 1000
-	minSpeedVal = 0
+	MaxSpeedVal = 1000
+	MinSpeedVal = 0
 )
 
 var (
@@ -36,10 +36,10 @@ type Speed struct {
 // It also takes an amplitude parameter for generating a random curve.
 // The minimum value is 0 to maximum 1000, and the amplitude parameter must be 4 to 512.
 func NewSpeed(min, max float64, amplitude int) (*Speed, error) {
-	if min < minSpeedVal {
+	if min < MinSpeedVal {
 		return nil, ErrMinSpeed
 	}
-	if max > maxSpeedVal {
+	if max > MaxSpeedVal {
 		return nil, ErrMaxSpeed
 	}
 	if max <= 0 {

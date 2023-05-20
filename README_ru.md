@@ -36,43 +36,21 @@ package main
 import (
 	"github.com/mmadfox/go-gpsgen"
 	"github.com/mmadfox/go-gpsgen/draw"
-	"github.com/mmadfox/go-gpsgen/route"
 )
 
 func main() {
-	myRoute, err := route.Russia2()
+	conf := gpsgen.NewConfig()
+
+	myDevice, err := conf.NewDevice()
 	if err != nil {
 		panic(err)
 	}
-
-	myDevice, err := gpsgen.NewDevice(
-		gpsgen.WithModel("myModel"),
-		gpsgen.WithDescritpion("some description"),
-		gpsgen.WithElevation(1, 3, 4),
-		gpsgen.WithSpeed(1, 7, 64),
-		gpsgen.WithOffline(1, 120),
-		gpsgen.WithBattery(0, 100),
-		gpsgen.WithProps(gpsgen.Properties{
-			"foo": "foo",
-			"bar": "bar",
-		}),
-		gpsgen.WithUserID("12345678"),
-		gpsgen.WithSensors(
-			gpsgen.Sensor{Name: "s1", Min: 1, Max: 10, Amplitude: 8},
-			gpsgen.Sensor{Name: "s2", Min: 3, Max: 10, Amplitude: 128}),
-		gpsgen.WithRoute(myRoute),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	myDevice.OnStateChange = func(state *gpsgen.State, snapshot []byte) {
+	myDevice.OnStateChange = func(state *gpsgen.State, _ []byte) {
 		draw.Table(state)
 	}
 
 	gen := gpsgen.New()
 	gen.Attach(myDevice)
-
 	gen.Run()
 	defer gen.Close()
 
@@ -101,9 +79,13 @@ $ go get github.com/mmadfox/go-gpsgen
 | WithSpeed     | min=0, max=1000, amplitude=4..512   | meter per second |
 | WithBattery   | min=0, max=100                      | percent          |
 | WithModel     | min=1, max=64                       |                  |
-| WithElevation | min=0, max=100000, amplitude=4..512 | meters           |
+| WithElevation | min=0, max=10000, amplitude=4..512  | meters           |
 | WithOffline   | min=0, max=300                      | seconds          |
-| WithSensors   | amplitude=4..512                    | any              |
+| WithSensors   | min=0, max=15, amplitude=4..512     | any              |
+#### Ограничения для устройства
+```json
+{"model":{"min":1,"max":64},"properties":{"min":0,"max":16,"maxValueLen":64,"minKeyLen":32},"description":{"min":3,"max":256},"speed":{"max":1000,"min":0,"amplitudeMin":4,"amplitudeMax":512},"battery":{"max":100,"min":0},"elevation":{"max":10000,"min":0,"amplitudeMin":4,"amplitudeMax":512},"offline":{"min":0,"max":900},"sensors":{"min":0,"max":15},"routes":{"min":1,"max":10,"minTracksPerRoute":1,"maxTracksPerRoute":128,"minSegmentsPerTrack":1,"maxSegmentsPerTrack":1000,"minDistance":1000,"maxDistance":2000000}}
+```
 
 ### Настройки
 | Option                | Description                                                                                     |

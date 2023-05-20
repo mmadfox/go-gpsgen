@@ -14,7 +14,7 @@ func main() {
 
 	myDevice, err := gpsgen.NewDevice(
 		gpsgen.WithModel("myModel"),
-		gpsgen.WithDescritpion("some description"),
+		gpsgen.WithDescription("some description"),
 		gpsgen.WithElevation(1, 3, 4),
 		gpsgen.WithSpeed(1, 7, 64),
 		gpsgen.WithOffline(1, 120),

@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	maxModelLen = 64
-	minModelLen = 1
+	MaxModelLen = 64
+	MinModelLen = 1
 )
 
 var (
@@ -32,10 +32,10 @@ func (m Model) String() string {
 // It performs length validation on the value and returns an error
 // if it's too short or too long.
 func NewModel(value string) (Model, error) {
-	if len(value) < minModelLen {
+	if len(value) < MinModelLen {
 		return Model{}, ErrModelTooShort
 	}
-	if len(value) > maxModelLen {
+	if len(value) > MaxModelLen {
 		return Model{}, ErrModelTooLong
 	}
 	return Model{val: value}, nil

@@ -47,7 +47,7 @@ func TestNewSpeed(t *testing.T) {
 		{
 			name: "should return error when min less than the minimum value",
 			args: args{
-				min: minSpeedVal - 1,
+				min: MinSpeedVal - 1,
 				max: 0,
 			},
 			wantErr: true,

@@ -28,7 +28,7 @@ func TestNewModel(t *testing.T) {
 		{
 			name: "should return error, when model value too long",
 			args: args{
-				value: strings.Repeat("a", maxModelLen+1),
+				value: strings.Repeat("a", MaxModelLen+1),
 			},
 			wantErr: true,
 		},

@@ -20,9 +20,10 @@ type DeviceSetting func(*deviceSettings)
 //
 // Amplitude is the number of control points on the bezier curve from 4 to 512.
 type Sensor struct {
-	Name      string  // specifies the name or identifier of the sensor.
-	Min, Max  float64 // indicates the minimum and maximum value that the sensor can produce.
-	Amplitude int     // specifies the amplitude or range of the sensor's values from 4 to 512
+	Name      string  `json:"name"`      // specifies the name or identifier of the sensor.
+	Min       float64 `json:"min"`       // indicates the minimum value that the sensor can produce.
+	Max       float64 `json:"max"`       // indicates the maximum value that the sensor can produce.
+	Amplitude int     `json:"amplitude"` // specifies the amplitude or range of the sensor's values from 4 to 512
 }
 
 // WithModel sets the model of the device.
@@ -100,7 +101,7 @@ func WithProps(props Properties) DeviceSetting {
 }
 
 // WithDescription sets the description in the device.
-func WithDescritpion(descr string) DeviceSetting {
+func WithDescription(descr string) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.descr = descr
 	}
