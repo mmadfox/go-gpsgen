@@ -33,7 +33,7 @@ func Drone(
 		WithModel(model),
 		WithSpeed(5, 10, Amplitude4),
 		WithRoutes(route),
-		WithElevation(100, 800, Amplitude8),
+		WithElevation(100, 800, Amplitude16),
 		WithBattery(80, 100),
 		WithOffline(1, 10),
 		WithProps(props),
