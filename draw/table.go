@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	"github.com/mmadfox/go-gpsgen"
-	"github.com/mmadfox/go-gpsgen/navigator"
+	"github.com/mmadfox/go-gpsgen/proto"
 	"github.com/olekukonko/tablewriter"
 )
 
-func Table(s *gpsgen.State) {
+func Table(s *proto.Device) {
 	if s == nil {
 		fmt.Println("state is <nil>")
 		return
@@ -32,7 +32,7 @@ func Table(s *gpsgen.State) {
 
 	table.Append([]string{
 		model2str(s.Model, s.Descr, s.Online, s.Props),
-		location2str(&s.Location),
+		location2str(s.Location),
 		f2s(s.Speed),
 		dist2str(s.Location.TotalDistance, s.Location.CurrentDistance),
 		sensor2str(s.Sensors),
@@ -41,16 +41,16 @@ func Table(s *gpsgen.State) {
 	table.Render()
 }
 
-func sensor2str(sensors map[string][2]float64) string {
+func sensor2str(sensors []*proto.Sensor) string {
 	sb := strings.Builder{}
-	for name, val := range sensors {
-		sb.WriteString(name)
+	for _, sensor := range sensors {
+		sb.WriteString(sensor.Name)
 		sb.WriteString(":")
 		sb.WriteString("valX=")
-		sb.WriteString(f2s(val[0]))
+		sb.WriteString(f2s(sensor.ValX))
 		sb.WriteString(" ")
 		sb.WriteString("valY=")
-		sb.WriteString(f2s(val[1]))
+		sb.WriteString(f2s(sensor.ValY))
 		sb.WriteString("\n")
 	}
 	return sb.String()
@@ -94,7 +94,7 @@ func dist2str(total, current float64) string {
 	return sb.String()
 }
 
-func location2str(loc *navigator.Location) string {
+func location2str(loc *proto.Location) string {
 	sb := strings.Builder{}
 	sb.WriteString("Lon:")
 	sb.WriteString(f2s(loc.Lon))
@@ -109,10 +109,10 @@ func location2str(loc *navigator.Location) string {
 	sb.WriteString(f2s(loc.Bearing))
 	sb.WriteString("\n")
 	sb.WriteString("DMSLat:")
-	sb.WriteString(loc.LatDMS.String())
+	sb.WriteString(loc.LatDms.String())
 	sb.WriteString("\n")
 	sb.WriteString("DMSLon:")
-	sb.WriteString(loc.LonDMS.String())
+	sb.WriteString(loc.LonDms.String())
 	sb.WriteString("\n")
 	return sb.String()
 }

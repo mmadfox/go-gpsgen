@@ -95,10 +95,11 @@ func (r *runner) run() {
 				return
 			case <-r.ticker.C:
 				r.mu.RLock()
-				for _, dev := range r.devices {
+				devices := r.devices
+				r.mu.RUnlock()
+				for _, dev := range devices {
 					dev.nextTick(tick)
 				}
-				r.mu.RUnlock()
 			}
 		}
 	}()

@@ -34,7 +34,7 @@ func TestDeviceSnapshot(t *testing.T) {
 	got := myDrone2.State()
 	require.Equal(t, want.Battery, got.Battery)
 	require.Equal(t, want.Descr, got.Descr)
-	require.Equal(t, want.ID, got.ID)
+	require.Equal(t, want.Id, got.Id)
 	require.Equal(t, want.Location, got.Location)
 	require.Equal(t, want.Model, got.Model)
 	require.Equal(t, want.Online, got.Online)

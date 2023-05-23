@@ -11,25 +11,29 @@ message Device {
     string model = 4;
     double speed = 5;
     double battery = 6;
-    double latitude = 7; 
-    double longitude = 8; 
-    double elevation = 9;
-    double bearing = 10;
-    double current_distance = 11;
-    double total_distance = 12;
-    DMS lat = 13;
-    DMS lon = 14;
-    UTM utm = 15;
-    repeated Sensor sensors = 16;
-    map<string, string> props = 17;
-    string descr = 18;
-    bool online = 19;
+    Location location = 7;
+    repeated Sensor sensors = 8;
+    map<string, string> props = 9;
+    string descr = 10;
+    bool online = 11;
 }
 
 message Sensor {
     string name = 1;
     double val_x = 2;
     double val_y = 3;
+}
+
+message Location {
+    double lat = 1; 
+    double lon = 2;
+    double alt = 3;
+    double bearing = 4;
+    double current_distance = 5;
+    double total_distance = 6;
+    DMS lat_dms = 7; 
+    DMS lon_dms = 8;
+    UTM utm = 9;
 }
 
 message DMS {

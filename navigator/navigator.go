@@ -14,7 +14,6 @@ type Navigator struct {
 	currentDistance float64
 	offlineIndex    int
 	point           Point
-	location        *Location
 	elevation       *types.Sensor
 	offline         *types.Random
 	totalDist       float64
@@ -38,7 +37,6 @@ func New(opts ...Option) (*Navigator, error) {
 
 	nav := &Navigator{
 		routes:      make([]*Route, 0),
-		location:    new(Location),
 		elevation:   elevation,
 		skipOffline: o.skipOffline,
 	}
@@ -93,7 +91,6 @@ func (n *Navigator) FromProto(nav *proto.NavigatorState) {
 	n.currentDistance = nav.CurrentDistance
 	n.offlineIndex = int(nav.OfflineIndex)
 	n.point = Point{X: nav.Point.Lat, Y: nav.Point.Lon}
-	n.location = &Location{}
 	n.elevation = new(types.Sensor)
 	n.elevation.FromProto(nav.Elevation)
 	if !nav.SkipOffline {
@@ -176,16 +173,15 @@ func (n *Navigator) IsOnline() bool {
 	return n.offlineIndex == 0
 }
 
-func (n *Navigator) Location() (loc Location) {
+func (n *Navigator) UpdateLocation(loc *proto.Location) {
 	loc.Lat = n.point.X
 	loc.Lon = n.point.Y
 	loc.Alt = n.elevation.ValueY()
 	loc.Bearing = n.Segment().bearing
 	loc.CurrentDistance = n.currentDistance
 	loc.TotalDistance = n.totalDist
-	loc.UTM = ToUTM(n.point.X, n.point.Y)
-	loc.LatDMS, loc.LonDMS = ToDMS(n.point.X, n.point.Y)
-	return loc
+	SetUTM(n.point.X, n.point.Y, loc.Utm)
+	SetDMS(n.point.X, n.point.Y, loc.LatDms, loc.LonDms)
 }
 
 func (n *Navigator) NextOffline() {

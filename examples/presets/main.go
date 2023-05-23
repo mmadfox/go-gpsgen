@@ -4,11 +4,12 @@ import (
 	"github.com/mmadfox/go-gpsgen"
 	"github.com/mmadfox/go-gpsgen/draw"
 	"github.com/mmadfox/go-gpsgen/navigator"
+	"github.com/mmadfox/go-gpsgen/proto"
 	"github.com/mmadfox/go-gpsgen/route"
 )
 
 func main() {
-	ch := make(chan *gpsgen.State, 2)
+	ch := make(chan *proto.Device, 2)
 
 	// drone
 	routeForDrone1, err := route.Generate()
@@ -19,7 +20,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	drone1.OnStateChange = func(state *gpsgen.State, snapshot []byte) {
+	drone1.OnStateChange = func(state *proto.Device) {
 		ch <- state
 	}
 
@@ -46,7 +47,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	drone2WithSensors.OnStateChange = func(state *gpsgen.State, snapshot []byte) {
+	drone2WithSensors.OnStateChange = func(state *proto.Device) {
 		ch <- state
 	}
 

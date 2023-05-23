@@ -5,6 +5,7 @@ import (
 
 	"github.com/mmadfox/go-gpsgen"
 	"github.com/mmadfox/go-gpsgen/geojson"
+	"github.com/mmadfox/go-gpsgen/proto"
 )
 
 func main() {
@@ -32,14 +33,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	myDrone.OnStateChange = func(s *gpsgen.State, snapshot []byte) {
-		fmt.Printf("model=%s, tick=%.f, dist=%.f, totalDist=%.f, online=%v, %v \n",
-			s.Model,
-			s.Tick,
-			s.Location.CurrentDistance,
-			s.Location.TotalDistance,
-			s.Online,
-			s.Location,
+	myDrone.OnStateChange = func(state *proto.Device) {
+		fmt.Printf("model=%s, tick=%d, dist=%f, totalDist=%f, online=%v\n",
+			state.Model,
+			state.Tick,
+			state.Location.CurrentDistance,
+			state.Location.TotalDistance,
+			state.Online,
 		)
 	}
 

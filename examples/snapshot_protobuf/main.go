@@ -24,10 +24,10 @@ func main() {
 			}
 			fmt.Printf("model=%s, lat=%f, lon=%f, el=%f, curDist=%f\n",
 				snap.Model,
-				snap.Latitude,
-				snap.Longitude,
-				snap.Elevation,
-				snap.CurrentDistance,
+				snap.Location.Lat,
+				snap.Location.Lon,
+				snap.Location.Alt,
+				snap.Location.CurrentDistance,
 			)
 		}
 	}()
@@ -36,8 +36,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	tracker1.OnStateChange = func(_ *gpsgen.State, snapshot []byte) {
-		dataCh <- snapshot
+	tracker1.OnStateChangeBytes = func(state []byte) {
+		dataCh <- state
 	}
 
 	gen := gpsgen.New()

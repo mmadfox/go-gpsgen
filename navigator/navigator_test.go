@@ -35,16 +35,15 @@ func TestNavigatorLocation(t *testing.T) {
 		ok := nav.Next(tick, speed)
 		require.True(t, nav.IsOnline())
 		require.True(t, ok)
-		loc := nav.Location()
 		dist := DistanceTo(
 			routepath[0].X,
 			routepath[0].Y,
-			loc.Lat,
-			loc.Lon,
+			nav.point.X,
+			nav.point.Y,
 		)
 
 		lat, lon := DestinationPoint(routepath[0].X, routepath[0].Y, float64(i), nav.Segment().Bearing())
-		distDiff := DistanceTo(lat, lon, loc.Lat, loc.Lon)
+		distDiff := DistanceTo(lat, lon, nav.point.X, nav.point.Y)
 		require.True(t, distDiff < maxDistance)
 
 		if i == 0 {
@@ -89,8 +88,7 @@ func TestNavigatorMultiTracks(t *testing.T) {
 		} else {
 			require.True(t, ok)
 		}
-		loc := nav.Location()
-		curDist = loc.CurrentDistance
+		curDist = nav.CurrentDistance()
 	}
 	require.True(t, (r1.TotalDistance()-curDist) < maxDistance)
 }
@@ -123,8 +121,7 @@ func TestNavigatorMultiRoutes(t *testing.T) {
 	maxDistance := 2.0
 	for i := 0; i < int(totalDist); i++ {
 		nav.Next(tick, speed)
-		loc := nav.Location()
-		curDist = loc.CurrentDistance
+		curDist = nav.CurrentDistance()
 	}
 	require.True(t, (totalDist-curDist) < maxDistance)
 	require.Equal(t, 1, nav.RouteIndex())

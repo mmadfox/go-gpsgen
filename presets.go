@@ -8,20 +8,20 @@ import (
 
 func RandomDrone() (*Device, error) {
 	model := random.String(5)
-	routes, err := route.RoutesForRussia()
+	route, err := route.Generate()
 	if err != nil {
 		return nil, err
 	}
-	return Drone(model, nil, routes...)
+	return Drone(model, nil, route)
 }
 
 func RandomTracker() (*Device, error) {
 	model := random.String(5)
-	routes, err := route.RoutesForRussia()
+	route, err := route.Generate()
 	if err != nil {
 		return nil, err
 	}
-	return Tracker(model, nil, routes...)
+	return Tracker(model, nil, route)
 }
 
 func Drone(
@@ -33,7 +33,7 @@ func Drone(
 		WithModel(model),
 		WithSpeed(5, 10, Amplitude4),
 		WithRoutes(route),
-		WithElevation(100, 800, Amplitude16),
+		WithElevation(100, 800, Amplitude8),
 		WithBattery(80, 100),
 		WithOffline(1, 10),
 		WithProps(props),
@@ -51,7 +51,7 @@ func DroneWithSensors(
 		WithModel(model),
 		WithRoutes(routes),
 		WithSpeed(5, 10, Amplitude8),
-		WithElevation(100, 800, Amplitude16),
+		WithElevation(100, 800, Amplitude8),
 		WithBattery(80, 100),
 		WithSensors(sensors...),
 		WithOffline(1, 10),

@@ -1,39 +1,13 @@
 package navigator
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/icholy/utm"
+	"github.com/mmadfox/go-gpsgen/proto"
 )
 
-type Location struct {
-	Lat float64 `json:"lat"`
-	Lon float64 `json:"lon"`
-	Alt float64 `json:"alt"`
-
-	Bearing         float64 `json:"bearing"`
-	CurrentDistance float64 `json:"currentDistance"`
-	TotalDistance   float64 `json:"routeDistance"`
-
-	LatDMS DMS `json:"latDMS"`
-	LonDMS DMS `json:"lonDMS"`
-	UTM    UTM `json:"utm"`
-}
-
-type DMS struct {
-	Degrees   int     `json:"degrees"`
-	Minutes   int     `json:"minutes"`
-	Seconds   float64 `json:"seconds"`
-	Direction string  `json:"direction"`
-}
-
-func (d DMS) String() string {
-	return fmt.Sprintf(`%d°%d'%f" %s`,
-		d.Degrees, d.Minutes, d.Seconds, d.Direction)
-}
-
-func ToDMS(lat, lon float64) (latDMS DMS, lonDMS DMS) {
+func SetDMS(lat, lon float64, latDMS *proto.DMS, lonDMS *proto.DMS) {
 	var latDir, lonDir string
 	if lat > 0 {
 		latDir = "N"
@@ -58,40 +32,28 @@ func ToDMS(lat, lon float64) (latDMS DMS, lonDMS DMS) {
 	longitudeMinutes := int((lon - float64(longitude)) * 60)
 	longitudeSeconds := (lon - float64(longitude) - float64(longitudeMinutes)/60) * 3600
 
-	latDMS = DMS{Degrees: latitude, Minutes: latitudeMinutes, Seconds: latitudeSeconds, Direction: latDir}
-	lonDMS = DMS{Degrees: longitude, Minutes: longitudeMinutes, Seconds: longitudeSeconds, Direction: lonDir}
+	latDMS.Degrees = int64(latitude)
+	latDMS.Minutes = int64(latitudeMinutes)
+	latDMS.Seconds = latitudeSeconds
+	latDMS.Direction = latDir
 
-	return
-
+	lonDMS.Degrees = int64(longitude)
+	lonDMS.Minutes = int64(longitudeMinutes)
+	lonDMS.Seconds = longitudeSeconds
+	lonDMS.Direction = lonDir
 }
 
-type UTM struct {
-	CentralMeridian float64 `json:"centralMeridian"`
-	Easting         float64 `json:"easting"`
-	Northing        float64 `json:"northing"`
-	LongZone        int     `json:"longZone"`
-	LatZone         string  `json:"latZone"`
-	Hemisphere      string  `json:"hemisphere"`
-	SRID            int     `json:"SRIDCode"`
-}
-
-func (u UTM) String() string {
-	return fmt.Sprintf("UTM{LongZone: %d, LatZone: %s, Hemisphere: %s, Easting: %f, Northing: %f}",
-		u.LongZone, u.LatZone, u.Hemisphere, u.Easting, u.Northing)
-}
-
-func ToUTM(lat, lon float64) UTM {
+func SetUTM(lat, lon float64, u *proto.UTM) {
 	e, n, z := utm.ToUTM(lat, lon)
 	hemisphere := "S"
 	if z.North {
 		hemisphere = "N"
 	}
-	return UTM{
-		Easting:    e,
-		Northing:   n,
-		LongZone:   z.Number,
-		LatZone:    string(z.Letter),
-		Hemisphere: hemisphere,
-		SRID:       z.SRID(),
-	}
+	u.CentralMeridian = z.CentralMeridian()
+	u.Easting = e
+	u.Northing = n
+	u.LongZone = int64(z.Number)
+	u.LatZone = string(z.Letter)
+	u.Hemisphere = hemisphere
+	u.Srid = int64(z.SRID())
 }

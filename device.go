@@ -3,7 +3,6 @@ package gpsgen
 import (
 	"fmt"
 	"math"
-	"sync"
 
 	"github.com/google/uuid"
 	"github.com/mmadfox/go-gpsgen/navigator"
@@ -16,37 +15,23 @@ import (
 // about the device's properties, description, model, speed,
 // battery, sensors, navigator, and various other fields.
 type Device struct {
-	id            uuid.UUID
-	userID        string
-	props         Properties
-	descr         string
-	model         types.Model
-	speed         *types.Speed
-	battery       *types.Battery
-	sensors       []*types.Sensor
-	navigator     *navigator.Navigator
-	OnStateChange func(*State, []byte)
-	stateCh       chan *State
-	readyCh       chan struct{}
-	loop          float64
-	avgTicks      float64
-	pool          *sync.Pool
-}
+	id        uuid.UUID
+	userID    string
+	props     Properties
+	descr     string
+	model     types.Model
+	speed     *types.Speed
+	battery   *types.Battery
+	sensors   []*types.Sensor
+	navigator *navigator.Navigator
+	stateCh   chan struct{}
+	readyCh   chan struct{}
+	loop      float64
+	avgTicks  float64
+	state     *pb.Device
 
-// The State struct represents the state of a device.
-// It contains fields that provide information about the device's state.
-type State struct {
-	ID       uuid.UUID             `json:"id"`
-	Tick     float64               `json:"tick"`
-	UserID   string                `json:"userID"`
-	Model    string                `json:"model"`
-	Speed    float64               `json:"speed"`
-	Battery  float64               `json:"battery"`
-	Sensors  map[string][2]float64 `json:"sensors"`
-	Location navigator.Location    `json:"location"`
-	Props    Properties            `json:"props"`
-	Descr    string                `json:"descr"`
-	Online   bool                  `json:"online"`
+	OnStateChange      func(*pb.Device)
+	OnStateChangeBytes func([]byte)
 }
 
 // Properties describes custom device characteristics.
@@ -80,15 +65,34 @@ func NewDevice(settings ...DeviceSetting) (*Device, error) {
 		props:     opts.props,
 		descr:     opts.descr,
 		navigator: nav,
-		stateCh:   make(chan *State, 1),
+		stateCh:   make(chan struct{}, 1),
 		readyCh:   make(chan struct{}, 1),
-		pool: &sync.Pool{
-			New: func() any {
-				return &State{
-					Sensors: make(map[string][2]float64, 0),
-				}
+		state: &pb.Device{
+			Model:  opts.model,
+			Descr:  opts.descr,
+			UserId: opts.userID,
+			Location: &pb.Location{
+				LatDms: new(pb.DMS),
+				LonDms: new(pb.DMS),
+				Utm:    new(pb.UTM),
 			},
 		},
+	}
+
+	if len(opts.sensors) > 0 {
+		device.state.Sensors = make([]*pb.Sensor, len(opts.sensors))
+		for i := 0; i < len(opts.sensors); i++ {
+			device.state.Sensors[i] = &pb.Sensor{
+				Name: opts.sensors[i].Name,
+			}
+		}
+	}
+
+	if len(opts.props) > 0 {
+		device.state.Props = make(map[string]string, len(opts.props))
+		for k, v := range opts.props {
+			device.state.Props[k] = v
+		}
 	}
 
 	if err := opts.applyFor(device); err != nil {
@@ -107,10 +111,9 @@ func (d *Device) ID() uuid.UUID {
 }
 
 // State returns a State object filled with the current state of the device.
-func (d *Device) State() *State {
-	state := new(State)
-	d.fillState(state)
-	return state
+func (d *Device) State() *pb.Device {
+	d.fillState()
+	return d.state
 }
 
 // MarshalBinary serializes the Device struct into a binary representation using Protocol Buffers.
@@ -170,28 +173,48 @@ func (d *Device) UnmarshalBinary(data []byte) error {
 		d.props[k] = v
 	}
 	d.descr = protoDev.Description
-	d.stateCh = make(chan *State, 1)
+	d.stateCh = make(chan struct{}, 1)
 	d.readyCh = make(chan struct{}, 1)
-	d.pool = &sync.Pool{
-		New: func() any {
-			return &State{
-				Sensors: make(map[string][2]float64, 0),
-			}
+	d.state = &pb.Device{
+		Model:  protoDev.Model,
+		Descr:  protoDev.Description,
+		UserId: protoDev.UserId,
+		Location: &pb.Location{
+			LatDms: new(pb.DMS),
+			LonDms: new(pb.DMS),
+			Utm:    new(pb.UTM),
 		},
 	}
+
+	if len(protoDev.Sensors) > 0 {
+		d.state.Sensors = make([]*pb.Sensor, len(protoDev.Sensors))
+		for i := 0; i < len(protoDev.Sensors); i++ {
+			d.state.Sensors[i] = &pb.Sensor{
+				Name: protoDev.Sensors[i].Name,
+			}
+		}
+	}
+
+	if len(protoDev.Properties) > 0 {
+		d.state.Props = make(map[string]string, len(protoDev.Properties))
+		for k, v := range protoDev.Properties {
+			d.state.Props[k] = v
+		}
+	}
+
 	return nil
 }
 
 func (d *Device) handleChange() {
-	snapshot := &pb.Device{}
-	for state := range d.stateCh {
-		if d.OnStateChange == nil {
-			continue
+	for {
+		<-d.stateCh
+		if d.OnStateChange != nil {
+			d.OnStateChange(d.state)
 		}
-		d.fillSnapshot(state, snapshot)
-		data, _ := proto.Marshal(snapshot)
-		d.OnStateChange(state, data)
-		d.pool.Put(state)
+		if d.OnStateChangeBytes != nil {
+			data, _ := proto.Marshal(d.state)
+			d.OnStateChangeBytes(data)
+		}
 		d.readyCh <- struct{}{}
 	}
 }
@@ -237,13 +260,9 @@ func (d *Device) nextTick(tick float64) bool {
 	}
 
 	if isReady && d.navigator.CurrentDistance() > 0 {
-		state, ok := d.pool.Get().(*State)
-		if !ok {
-			state = d.pool.New().(*State)
-		}
-		d.fillState(state)
+		d.fillState()
 		select {
-		case d.stateCh <- state:
+		case d.stateCh <- struct{}{}:
 		default:
 		}
 	}
@@ -251,105 +270,17 @@ func (d *Device) nextTick(tick float64) bool {
 	return next
 }
 
-func (d *Device) fillState(state *State) {
-	state.Model = d.model.String()
-	state.Battery = d.battery.Value()
-	state.Speed = d.speed.Value()
-	state.Tick = d.loop
-	state.Online = d.navigator.IsOnline()
-	state.Location = d.navigator.Location()
-	if state.Sensors == nil {
-		state.Sensors = make(map[string][2]float64, len(d.sensors))
-	}
-	if d.props != nil {
-		if state.Props == nil {
-			state.Props = make(Properties, len(d.props))
-		}
-		for k, v := range d.props {
-			state.Props[k] = v
-		}
-	}
-	for i := 0; i < len(d.sensors); i++ {
-		sensor := d.sensors[i]
-		state.Sensors[sensor.Name()] = [2]float64{
-			sensor.ValueX(),
-			sensor.ValueY(),
-		}
-	}
-	if len(state.UserID) == 0 {
-		state.UserID = d.userID
-	}
-	if len(state.Descr) == 0 {
-		state.Descr = d.descr
-	}
-}
+func (d *Device) fillState() {
+	d.state.Battery = d.battery.Value()
+	d.state.Speed = d.speed.Value()
+	d.state.Tick = int64(d.loop)
+	d.state.Online = d.navigator.IsOnline()
+	d.navigator.UpdateLocation(d.state.Location)
 
-func (d *Device) fillSnapshot(state *State, snap *pb.Device) {
-	snap.Battery = state.Battery
-	snap.Speed = state.Speed
-	snap.Tick = int64(state.Tick)
-	snap.Online = state.Online
-	snap.Latitude = state.Location.Lat
-	snap.Longitude = state.Location.Lon
-	snap.Elevation = state.Location.Alt
-	snap.CurrentDistance = state.Location.CurrentDistance
-	snap.TotalDistance = state.Location.TotalDistance
-
-	if snap.Lat == nil {
-		snap.Lat = new(pb.DMS)
-	}
-	if snap.Lon == nil {
-		snap.Lon = new(pb.DMS)
-	}
-	if snap.Utm == nil {
-		snap.Utm = new(pb.UTM)
-	}
-
-	snap.Lat.Degrees = int64(state.Location.LatDMS.Degrees)
-	snap.Lat.Direction = state.Location.LatDMS.Direction
-	snap.Lat.Minutes = int64(state.Location.LatDMS.Minutes)
-	snap.Lat.Seconds = state.Location.LatDMS.Seconds
-
-	snap.Lon.Degrees = int64(state.Location.LonDMS.Degrees)
-	snap.Lon.Direction = state.Location.LonDMS.Direction
-	snap.Lon.Minutes = int64(state.Location.LonDMS.Minutes)
-	snap.Lon.Seconds = state.Location.LonDMS.Seconds
-
-	snap.Utm.CentralMeridian = state.Location.CurrentDistance
-	snap.Utm.Easting = state.Location.UTM.Easting
-	snap.Utm.Hemisphere = state.Location.UTM.Hemisphere
-	snap.Utm.LatZone = state.Location.UTM.LatZone
-	snap.Utm.LongZone = int64(state.Location.UTM.LongZone)
-	snap.Utm.Northing = state.Location.UTM.Northing
-	snap.Utm.Srid = int64(state.Location.UTM.SRID)
-
-	if snap.Sensors == nil && len(state.Sensors) > 0 {
-		snap.Sensors = make([]*pb.Sensor, 0, len(state.Sensors))
-		for name := range state.Sensors {
-			snap.Sensors = append(snap.Sensors, &pb.Sensor{
-				Name: name,
-			})
+	if len(d.sensors) > 0 {
+		for i := 0; i < len(d.sensors); i++ {
+			d.state.Sensors[i].ValX = d.sensors[i].ValueX()
+			d.state.Sensors[i].ValY = d.sensors[i].ValueY()
 		}
-	}
-	for i := 0; i < len(snap.Sensors); i++ {
-		sensor := snap.Sensors[i]
-		stateSensor, ok := state.Sensors[sensor.Name]
-		if !ok {
-			continue
-		}
-		sensor.ValX = stateSensor[0]
-		sensor.ValY = stateSensor[1]
-	}
-	if len(snap.Model) == 0 {
-		snap.Model = state.Model
-	}
-	if len(snap.Props) == 0 && len(state.Props) > 0 {
-		snap.Props = make(map[string]string, len(state.Props))
-		for k, v := range state.Props {
-			snap.Props[k] = v
-		}
-	}
-	if len(snap.Descr) == 0 && len(state.Descr) > 0 {
-		snap.Descr = state.Descr
 	}
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/mmadfox/go-gpsgen"
 	"github.com/mmadfox/go-gpsgen/draw"
+	"github.com/mmadfox/go-gpsgen/proto"
 	"github.com/mmadfox/go-gpsgen/route"
 )
 
@@ -60,7 +61,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	dev.OnStateChange = func(state *gpsgen.State, _ []byte) {
+	dev.OnStateChange = func(state *proto.Device) {
 		draw.Table(state)
 	}
 

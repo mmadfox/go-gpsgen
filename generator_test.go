@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mmadfox/go-gpsgen/proto"
 	"github.com/mmadfox/go-gpsgen/route"
 	"github.com/stretchr/testify/require"
 )
@@ -19,10 +20,9 @@ func TestGenerator(t *testing.T) {
 	require.NoError(t, err)
 
 	var tick uint32
-	d1.OnStateChange = func(s *State, snapshot []byte) {
+	d1.OnStateChange = func(dev *proto.Device) {
 		atomic.AddUint32(&tick, 1)
-		require.NotNil(t, s)
-		require.NotZero(t, snapshot)
+		require.NotNil(t, dev)
 	}
 
 	gen.Attach(d1)
