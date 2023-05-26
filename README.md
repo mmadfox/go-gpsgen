@@ -69,15 +69,15 @@ $ go get github.com/mmadfox/go-gpsgen
 +---------------------------+--------------------------------+--------------------------------+--------------------------------+
 |          DEVICE           |            LOCATION            |            SENSORS             |         CUSTOM SENSORS         |
 +---------------------------+--------------------------------+--------------------------------+--------------------------------+
-| Model:myModel             | Lon:37.510157 Lat:55.806540    | Speed:1.01m/s                  | s1:valX=0.000875 valY=1.685227 |
-| Status:Online             | Elevation:2.501655m            | BatteryCharge:99.99%           | s2:valX=0.015872 valY=3.767889 |
+| Model:myModel             | Lon:37.510332 Lat:55.806487    | Speed:1.40m/s                  | s1:valX=0.009623 valY=5.189231 |
+| Status:Online             | Elevation:1.871725m            | BatteryCharge:99.92%           | s2:valX=0.174587 valY=5.228231 |
 | RouteIndex:0              | Bearing:118.180068             | ChargeTime:4h0m0s              |                                |
-| TrackIndex:0              | DMSLat:55°48'23.543422"N       | Duration:1s                    |                                |
-| SegmentIndex:0            | DMSLon:37°30'36.564914"E       | TotalDist:32006.99m.           |                                |
-| Descr:some description    | UTMEasting:406621.9896         | CurDist:1.01m.                 |                                |
-| Properties:               | UTMNorthing:6185552.6145       | CurSegDist:1.01m.              |                                |
+| TrackIndex:0              | DMSLat:55°48'23.353184"N       | Duration:11s                   |                                |
+| SegmentIndex:0            | DMSLon:37°30'37.196757"E       | TotalDist:32006.99m.           |                                |
+| Descr:some description    | UTMEasting:406632.8626         | CurDist:13.45m.                |                                |
+| Properties:               | UTMNorthing:6185546.4974       | CurSegDist:13.45m.             |                                |
 | foo=foo,bar=bar,          | UTMZone:37U                    | SegDist:1521.11m.              |                                |
-|                           |                                | Tick:9223372036.85s            |                                |
+|                           |                                | Tick:1.00s                     |                                |
 +---------------------------+--------------------------------+--------------------------------+--------------------------------+
 ```
 ### Limits and base units
