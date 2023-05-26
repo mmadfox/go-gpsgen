@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/mmadfox/go-gpsgen"
 	"github.com/mmadfox/go-gpsgen/draw"
 	"github.com/mmadfox/go-gpsgen/proto"
@@ -19,7 +21,7 @@ func main() {
 		gpsgen.WithElevation(1, 3, 4),
 		gpsgen.WithSpeed(1, 7, 64),
 		gpsgen.WithOffline(1, 120),
-		gpsgen.WithBattery(0, 100),
+		gpsgen.WithBattery(1, 100, time.Hour*4),
 		gpsgen.WithProps(gpsgen.Properties{
 			"foo": "foo",
 			"bar": "bar",

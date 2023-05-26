@@ -27,6 +27,9 @@ type Generator struct {
 // It creates a slice of runner instances with a length equal to the number of available CPUs.
 func New(opts ...Option) *Generator {
 	numCpu := runtime.NumCPU()
+	if numCpu > 4 {
+		numCpu = 4
+	}
 	gen := Generator{
 		runners: make([]*runner, numCpu),
 	}

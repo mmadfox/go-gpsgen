@@ -3,6 +3,7 @@ package gpsgen
 import (
 	"fmt"
 	"math"
+	"sync/atomic"
 
 	"github.com/google/uuid"
 	"github.com/mmadfox/go-gpsgen/navigator"
@@ -15,23 +16,26 @@ import (
 // about the device's properties, description, model, speed,
 // battery, sensors, navigator, and various other fields.
 type Device struct {
-	id        uuid.UUID
-	userID    string
-	props     Properties
-	descr     string
-	model     types.Model
-	speed     *types.Speed
-	battery   *types.Battery
-	sensors   []*types.Sensor
-	navigator *navigator.Navigator
-	stateCh   chan struct{}
-	readyCh   chan struct{}
-	loop      float64
-	avgTicks  float64
-	state     *pb.Device
+	id           uuid.UUID
+	userID       string
+	props        Properties
+	descr        string
+	model        types.Model
+	speed        *types.Speed
+	battery      *types.Battery
+	sensors      []*types.Sensor
+	navigator    *navigator.Navigator
+	stateCh      chan struct{}
+	isReady      uint32
+	loop         float64
+	tick         float64
+	avgTicks     float64
+	state        *pb.Device
+	protoEncoder *pb.Encoder
 
 	OnStateChange      func(*pb.Device)
 	OnStateChangeBytes func([]byte)
+	OnClose            func(uuid.UUID)
 }
 
 // Properties describes custom device characteristics.
@@ -57,20 +61,22 @@ func NewDevice(settings ...DeviceSetting) (*Device, error) {
 		return nil, err
 	}
 
-	deviceID := uuid.New()
+	if opts.id == uuid.Nil {
+		opts.id = uuid.New()
+	}
 
 	device := &Device{
-		id:        deviceID,
-		userID:    opts.userID,
-		props:     opts.props,
-		descr:     opts.descr,
-		navigator: nav,
-		stateCh:   make(chan struct{}, 1),
-		readyCh:   make(chan struct{}, 1),
+		id:           opts.id,
+		userID:       opts.userID,
+		props:        opts.props,
+		descr:        opts.descr,
+		navigator:    nav,
+		protoEncoder: pb.NewEncoder(),
 		state: &pb.Device{
-			Model:  opts.model,
-			Descr:  opts.descr,
-			UserId: opts.userID,
+			Model:            opts.model,
+			Descr:            opts.descr,
+			UserId:           opts.userID,
+			BatterChargeTime: int64(opts.batteryChargeTime),
 			Location: &pb.Location{
 				LatDms: new(pb.DMS),
 				LonDms: new(pb.DMS),
@@ -120,17 +126,17 @@ func (d *Device) State() *pb.Device {
 // The method marshals the proto.DeviceSnapshot object into a byte slice using Protocol Buffers' proto.Marshal function.
 func (d *Device) MarshalBinary() ([]byte, error) {
 	protoDev := &pb.DeviceSnapshot{
-		Id:          d.id[:],
-		Model:       d.model.String(),
-		Speed:       d.speed.ToProto(),
-		Battery:     d.battery.ToProto(),
-		Sensors:     make([]*pb.SensorState, len(d.sensors)),
-		Navigator:   d.navigator.ToProto(),
-		Loop:        d.loop,
-		AvgTick:     d.avgTicks,
-		UserId:      d.userID,
-		Description: d.descr,
-		Properties:  make(Properties, len(d.props)),
+		Id:            d.id[:],
+		Model:         d.model.String(),
+		Speed:         d.speed.ToProto(),
+		BatteryCharge: d.battery.ToProto(),
+		Sensors:       make([]*pb.SensorState, len(d.sensors)),
+		Navigator:     d.navigator.ToProto(),
+		Loop:          d.loop,
+		AvgTick:       d.avgTicks,
+		UserId:        d.userID,
+		Description:   d.descr,
+		Properties:    make(Properties, len(d.props)),
 	}
 	for k, v := range d.props {
 		protoDev.Properties[k] = v
@@ -157,7 +163,7 @@ func (d *Device) UnmarshalBinary(data []byte) error {
 	d.speed = new(types.Speed)
 	d.speed.FromProto(protoDev.Speed)
 	d.battery = new(types.Battery)
-	d.battery.FromProto(protoDev.Battery)
+	d.battery.FromProto(protoDev.BatteryCharge)
 	d.sensors = make([]*types.Sensor, len(protoDev.Sensors))
 	for i := 0; i < len(protoDev.Sensors); i++ {
 		d.sensors[i] = new(types.Sensor)
@@ -174,7 +180,6 @@ func (d *Device) UnmarshalBinary(data []byte) error {
 	}
 	d.descr = protoDev.Description
 	d.stateCh = make(chan struct{}, 1)
-	d.readyCh = make(chan struct{}, 1)
 	d.state = &pb.Device{
 		Model:  protoDev.Model,
 		Descr:  protoDev.Description,
@@ -206,41 +211,59 @@ func (d *Device) UnmarshalBinary(data []byte) error {
 }
 
 func (d *Device) handleChange() {
+	defer func() {
+		if d.OnClose != nil {
+			d.OnClose(d.id)
+		}
+		atomic.StoreUint32(&d.isReady, 0)
+	}()
 	for {
-		<-d.stateCh
+		_, ok := <-d.stateCh
+		if !ok {
+			return
+		}
 		if d.OnStateChange != nil {
 			d.OnStateChange(d.state)
 		}
 		if d.OnStateChangeBytes != nil {
-			data, _ := proto.Marshal(d.state)
-			d.OnStateChangeBytes(data)
+			if err := d.protoEncoder.Marshal(d.state); err == nil {
+				d.OnStateChangeBytes(d.protoEncoder.Bytes())
+			}
 		}
-		d.readyCh <- struct{}{}
+		atomic.StoreUint32(&d.isReady, 1)
 	}
 }
 
-func (d *Device) nextTick(tick float64) bool {
+func (d *Device) mount() {
+	d.stateCh = make(chan struct{}, 1)
+	go d.handleChange()
+	atomic.StoreUint32(&d.isReady, 1)
+}
+
+func (d *Device) unmount() {
+	close(d.stateCh)
+}
+
+func (d *Device) nextTick(tick float64, realTick float64) bool {
 	if !d.navigator.IsOnline() {
 		d.navigator.NextOffline()
 		return false
 	}
 
-	var isReady bool
-	select {
-	case <-d.readyCh:
-		isReady = true
-	default:
-		if d.loop == 0 {
-			isReady = true
-		}
+	isReady := atomic.LoadUint32(&d.isReady) == 1
+
+	d.battery.Next(tick)
+	if d.battery.IsLow() {
+		d.battery.Reset()
+		d.navigator.ToOffline()
+		return false
 	}
 
 	d.loop += tick
 	t := math.Min(d.loop/d.avgTicks, 1.0)
 	d.speed.Next(t)
-
-	d.battery.Next(t)
-	d.navigator.NextSensors(t)
+	d.tick = realTick
+	d.navigator.NextElevation(t)
 
 	if len(d.sensors) > 0 {
 		for i := 0; i < len(d.sensors); i++ {
@@ -260,6 +283,7 @@ func (d *Device) nextTick(tick float64) bool {
 	}
 
 	if isReady && d.navigator.CurrentDistance() > 0 {
+		atomic.StoreUint32(&d.isReady, 0)
 		d.fillState()
 		select {
 		case d.stateCh <- struct{}{}:
@@ -271,12 +295,12 @@ func (d *Device) nextTick(tick float64) bool {
 }
 
 func (d *Device) fillState() {
-	d.state.Battery = d.battery.Value()
+	d.state.BatteryCharge = d.battery.Value()
 	d.state.Speed = d.speed.Value()
-	d.state.Tick = int64(d.loop)
+	d.state.Duration = d.loop
+	d.state.Tick = d.tick
 	d.state.Online = d.navigator.IsOnline()
 	d.navigator.UpdateLocation(d.state.Location)
-
 	if len(d.sensors) > 0 {
 		for i := 0; i < len(d.sensors); i++ {
 			d.state.Sensors[i].ValX = d.sensors[i].ValueX()

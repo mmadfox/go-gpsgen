@@ -180,6 +180,11 @@ func (n *Navigator) UpdateLocation(loc *proto.Location) {
 	loc.Bearing = n.Segment().bearing
 	loc.CurrentDistance = n.currentDistance
 	loc.TotalDistance = n.totalDist
+	loc.RouteIndex = int64(n.routeIndex)
+	loc.TrackIndex = int64(n.trackIndex)
+	loc.SegmentIndex = int64(n.segmentIndex)
+	loc.CurrentSegmentDistance = n.segmentDistance
+	loc.SegmentDistance = n.Segment().Dist()
 	SetUTM(n.point.X, n.point.Y, loc.Utm)
 	SetDMS(n.point.X, n.point.Y, loc.LatDms, loc.LonDms)
 }
@@ -193,7 +198,7 @@ func (n *Navigator) NextOffline() {
 	}
 }
 
-func (n *Navigator) NextSensors(t float64) {
+func (n *Navigator) NextElevation(t float64) {
 	n.elevation.Next(t)
 }
 

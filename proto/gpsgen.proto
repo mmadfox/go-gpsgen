@@ -7,15 +7,17 @@ package proto;
 message Device {
     string id = 1;
     string user_id = 2;
-    int64 tick = 3;
-    string model = 4;
-    double speed = 5;
-    double battery = 6;
-    Location location = 7;
-    repeated Sensor sensors = 8;
-    map<string, string> props = 9;
-    string descr = 10;
-    bool online = 11;
+    double tick = 3;
+    double duration = 4;
+    string model = 5;
+    double speed = 6;
+    double battery_charge = 7;
+    int64  batter_charge_time = 8;
+    Location location = 9;
+    repeated Sensor sensors = 10;
+    map<string, string> props = 11;
+    string descr = 12;
+    bool online = 13;
 }
 
 message Sensor {
@@ -31,9 +33,14 @@ message Location {
     double bearing = 4;
     double current_distance = 5;
     double total_distance = 6;
-    DMS lat_dms = 7; 
-    DMS lon_dms = 8;
-    UTM utm = 9;
+    int64  route_index = 7;
+    int64 track_index = 8;
+    int64 segment_index = 9;
+    double segment_distance = 10; 
+    double current_segment_distance = 11;
+    DMS lat_dms = 12; 
+    DMS lon_dms = 13;
+    UTM utm = 14;
 }
 
 message DMS {
@@ -47,8 +54,8 @@ message UTM {
    double central_meridian = 1;
    double easting = 2;
    double northing = 3;
-   int64 LongZone = 4;
-   string LatZone = 5;
+   int64 long_zone = 4;
+   string lat_zone = 5;
    string hemisphere = 6;
    int64 srid = 7;
 }

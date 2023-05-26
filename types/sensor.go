@@ -112,7 +112,7 @@ func (t *Sensor) String() string {
 //
 // Tick in the range from 0 to 1.
 func (t *Sensor) Next(tick float64) {
-	point := t.gen.Point(tick)
-	t.valX = point.X
-	t.valY = point.Y
+	p := t.gen.Point(tick)
+	t.valX = p.X
+	t.valY = p.Y
 }

@@ -3,14 +3,15 @@ package types
 import (
 	"errors"
 	"fmt"
+	"time"
 
-	"github.com/mmadfox/go-gpsgen/curve"
 	"github.com/mmadfox/go-gpsgen/proto"
 )
 
 const (
-	minBatteryVal = 0
-	maxBatteryVal = 100
+	minBatteryVal     = 0
+	maxBatteryVal     = 100
+	defaultChargeTime = time.Hour * 9
 )
 
 var (
@@ -22,17 +23,13 @@ var (
 
 // Battery represents a Battery object with various methods and fields.
 type Battery struct {
-	min float64
-	max float64
-	val float64
-	gen *curve.Curve
+	min        float64
+	max        float64
+	val        float64
+	chargeTime time.Duration
 }
 
-// NewBattery creates a new battery instance and returns a pointer to it.
-// It validates the provided minimum and maximum values against predefined limits
-// and returns the corresponding errors if the values are out of range.
-// Valid values from 0 to 100%.
-func NewBattery(min, max float64) (*Battery, error) {
+func NewBattery(min, max float64, chargeTime time.Duration) (*Battery, error) {
 	if min < minBatteryVal {
 		return nil, ErrMinBattery
 	}
@@ -42,36 +39,28 @@ func NewBattery(min, max float64) (*Battery, error) {
 	if min > max {
 		min = max
 	}
-	gen, err := curve.RandomCurveWithMode(min, max, 4, curve.ModeMaxMin)
-	if err != nil {
-		return nil, err
+	if chargeTime <= 0 {
+		chargeTime = defaultChargeTime
 	}
 	return &Battery{
-		min: min,
-		max: max,
-		gen: gen,
+		min:        min,
+		max:        max,
+		chargeTime: chargeTime,
 	}, nil
 }
 
-// ToProto converts the battery object into a protobuf message
-// (proto.TypeState) and returns it.
-func (t *Battery) ToProto() *proto.TypeState {
-	return &proto.TypeState{
-		Min: t.min,
-		Max: t.max,
-		Val: t.val,
-		Gen: t.gen.ToProto(),
+func (t *Battery) ToProto() *proto.BatteryState {
+	return &proto.BatteryState{
+		Min:        t.min,
+		Max:        t.max,
+		ChargeTime: int64(t.chargeTime),
 	}
 }
 
-// FromProto sets the battery object's fields based on the values
-// from a protobuf message (proto.TypeState).
-func (t *Battery) FromProto(battery *proto.TypeState) {
-	t.gen = new(curve.Curve)
-	t.gen.FromProto(battery.Gen)
+func (t *Battery) FromProto(battery *proto.BatteryState) {
 	t.min = battery.Min
 	t.max = battery.Max
-	t.val = battery.Val
+	t.chargeTime = time.Duration(battery.ChargeTime)
 }
 
 // Min returns the minimum value of the battery.
@@ -84,22 +73,33 @@ func (t *Battery) Max() float64 {
 	return t.max
 }
 
+func (t *Battery) ChargeTime() time.Duration {
+	return t.chargeTime
+}
+
+func (t *Battery) IsLow() bool {
+	return t.Value() == t.min
+}
+
 // Value returns the current value of the battery.
 func (t *Battery) Value() float64 {
-	return t.val
+	val := 100 - (t.val / t.chargeTime.Seconds() * 100)
+	if val < t.min {
+		val = t.min
+	}
+	return val
+}
+
+func (t *Battery) Reset() {
+	t.val = 0
 }
 
 // String returns a formatted string representation of the battery object,
 // displaying the battery level as a percentage.
 func (t *Battery) String() string {
-	return fmt.Sprintf("battery: %.2f%%", t.val)
+	return fmt.Sprintf("batteryCharge: %.2f%%", t.Value())
 }
 
-// Next updates the battery object's value based on the tick
-// value by using the generator object.
-//
-// Tick in the range from 0 to 1.
-func (t *Battery) Next(tick float64) {
-	point := t.gen.Point(tick)
-	t.val = point.Y
+func (t *Battery) Next(seconds float64) {
+	t.val += seconds
 }

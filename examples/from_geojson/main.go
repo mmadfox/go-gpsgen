@@ -34,7 +34,7 @@ func main() {
 		panic(err)
 	}
 	myDrone.OnStateChange = func(state *proto.Device) {
-		fmt.Printf("model=%s, tick=%d, dist=%f, totalDist=%f, online=%v\n",
+		fmt.Printf("model=%s, tick=%f, dist=%f, totalDist=%f, online=%v\n",
 			state.Model,
 			state.Tick,
 			state.Location.CurrentDistance,

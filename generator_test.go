@@ -5,10 +5,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mmadfox/go-gpsgen/proto"
+	pb "github.com/mmadfox/go-gpsgen/proto"
 	"github.com/mmadfox/go-gpsgen/route"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
 )
+
+func TestProtobuf(t *testing.T) {
+	var buf []byte
+	var err error
+	for i := 0; i < 10; i++ {
+		buf, err = proto.MarshalOptions{}.MarshalAppend(buf[:0], &pb.Device{
+			UserId: "userID",
+		})
+		if err != nil {
+			panic(err)
+		}
+	}
+}
 
 func TestGenerator(t *testing.T) {
 	routes, err := route.RoutesForChina()
@@ -20,7 +34,7 @@ func TestGenerator(t *testing.T) {
 	require.NoError(t, err)
 
 	var tick uint32
-	d1.OnStateChange = func(dev *proto.Device) {
+	d1.OnStateChange = func(dev *pb.Device) {
 		atomic.AddUint32(&tick, 1)
 		require.NotNil(t, dev)
 	}
@@ -51,7 +65,11 @@ func TestGeneratorControl(t *testing.T) {
 
 		// attach
 		gen.Attach(dev)
-		dev, err = gen.Lookup(dev.ID())
+		dev1 := dev
+		for i := 0; i < 3; i++ {
+			dev, err = gen.Lookup(dev1.ID())
+			time.Sleep(50 * time.Millisecond)
+		}
 		require.NoError(t, err)
 		require.NotNil(t, dev)
 
@@ -59,7 +77,11 @@ func TestGeneratorControl(t *testing.T) {
 		gen.Detach(dev.ID())
 
 		// lookup
-		dev, err = gen.Lookup(dev.ID())
+		dev2 := dev
+		for i := 0; i < 3; i++ {
+			dev, err = gen.Lookup(dev2.ID())
+			time.Sleep(50 * time.Millisecond)
+		}
 		require.Error(t, err)
 		require.Nil(t, dev)
 

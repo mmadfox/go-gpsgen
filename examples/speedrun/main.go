@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/mmadfox/go-gpsgen"
 	"github.com/mmadfox/go-gpsgen/draw"
 	"github.com/mmadfox/go-gpsgen/proto"
@@ -20,7 +22,8 @@ func main() {
 		draw.Table(state)
 	}
 
-	gen := gpsgen.New()
+	genInterval := gpsgen.WithInterval(10 * time.Millisecond)
+	gen := gpsgen.New(genInterval)
 	gen.Attach(myDevice)
 
 	gen.Run()

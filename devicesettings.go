@@ -2,6 +2,7 @@ package gpsgen
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/mmadfox/go-gpsgen/navigator"
@@ -24,6 +25,13 @@ type Sensor struct {
 	Min       float64 `json:"min"`       // indicates the minimum value that the sensor can produce.
 	Max       float64 `json:"max"`       // indicates the maximum value that the sensor can produce.
 	Amplitude int     `json:"amplitude"` // specifies the amplitude or range of the sensor's values from 4 to 512
+}
+
+// WithID sets the device id.
+func WithID(id uuid.UUID) DeviceSetting {
+	return func(ds *deviceSettings) {
+		ds.id = id
+	}
 }
 
 // WithModel sets the model of the device.
@@ -63,11 +71,11 @@ func WithSpeed(min, max float64, amplitude int) DeviceSetting {
 	}
 }
 
-// WithBattery sets the minimum and maximum battery values in the device.
-func WithBattery(min, max float64) DeviceSetting {
+func WithBattery(min, max float64, chargeTime time.Duration) DeviceSetting {
 	return func(ds *deviceSettings) {
 		ds.battery.min = min
 		ds.battery.max = max
+		ds.batteryChargeTime = chargeTime
 	}
 }
 
@@ -114,27 +122,29 @@ func Routes(route ...*navigator.Route) []*navigator.Route {
 
 func defaultSettings() *deviceSettings {
 	return &deviceSettings{
-		id:        uuid.New(),
-		model:     types.RandomModel().String(),
-		speed:     rangeFloatVal{min: 1, max: 5},
-		battery:   rangeFloatVal{min: 50, max: 100},
-		elevation: rangeFloatVal{min: 1, max: 300},
-		offline:   rangeIntVal{min: 1, max: 60},
+		id:                uuid.New(),
+		model:             types.RandomModel().String(),
+		speed:             rangeFloatVal{min: 1, max: 5},
+		battery:           rangeFloatVal{min: 50, max: 100},
+		batteryChargeTime: 4 * time.Hour,
+		elevation:         rangeFloatVal{min: 1, max: 300},
+		offline:           rangeIntVal{min: 1, max: 60},
 	}
 }
 
 type deviceSettings struct {
-	id        uuid.UUID
-	userID    string
-	model     string
-	speed     rangeFloatVal
-	battery   rangeFloatVal
-	sensors   []Sensor
-	elevation rangeFloatVal
-	offline   rangeIntVal
-	routes    []*navigator.Route
-	props     Properties
-	descr     string
+	id                uuid.UUID
+	userID            string
+	model             string
+	speed             rangeFloatVal
+	battery           rangeFloatVal
+	batteryChargeTime time.Duration
+	sensors           []Sensor
+	elevation         rangeFloatVal
+	offline           rangeIntVal
+	routes            []*navigator.Route
+	props             Properties
+	descr             string
 }
 
 func (ds *deviceSettings) applyFor(d *Device) (err error) {
@@ -142,11 +152,19 @@ func (ds *deviceSettings) applyFor(d *Device) (err error) {
 	if err != nil {
 		return err
 	}
-	d.speed, err = types.NewSpeed(ds.speed.min, ds.speed.max, ds.speed.amplitude)
+	d.speed, err = types.NewSpeed(
+		ds.speed.min,
+		ds.speed.max,
+		ds.speed.amplitude,
+	)
 	if err != nil {
 		return err
 	}
-	d.battery, err = types.NewBattery(ds.battery.min, ds.battery.max)
+	d.battery, err = types.NewBattery(
+		ds.battery.min,
+		ds.battery.max,
+		ds.batteryChargeTime,
+	)
 	if err != nil {
 		return err
 	}

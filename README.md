@@ -65,21 +65,26 @@ $ go get github.com/mmadfox/go-gpsgen
 ```
 
 ### Generated data
-| Name              | Data                                        |
-|-------------------|---------------------------------------------|
-| Device            | model, description, properties              |
-| Distance (meters) | total, current                              |
-| Speed (m/s)       | current speed                               |
-| Navigator         | lat, lon, alt, bearing, DMSLat, DMSLon, UTM |
-| Sensor            | value_x, value_y, name                      |
-| Status            | online, offline                             |
-| User              | custom id, tick                             |
-
+```shell
++---------------------------+--------------------------------+--------------------------------+--------------------------------+
+|          DEVICE           |            LOCATION            |            SENSORS             |         CUSTOM SENSORS         |
++---------------------------+--------------------------------+--------------------------------+--------------------------------+
+| Model:myModel             | Lon:37.510157 Lat:55.806540    | Speed:1.01m/s                  | s1:valX=0.000875 valY=1.685227 |
+| Status:Online             | Elevation:2.501655m            | BatteryCharge:99.99%           | s2:valX=0.015872 valY=3.767889 |
+| RouteIndex:0              | Bearing:118.180068             | ChargeTime:4h0m0s              |                                |
+| TrackIndex:0              | DMSLat:55°48'23.543422"N       | Duration:1s                    |                                |
+| SegmentIndex:0            | DMSLon:37°30'36.564914"E       | TotalDist:32006.99m.           |                                |
+| Descr:some description    | UTMEasting:406621.9896         | CurDist:1.01m.                 |                                |
+| Properties:               | UTMNorthing:6185552.6145       | CurSegDist:1.01m.              |                                |
+| foo=foo,bar=bar,          | UTMZone:37U                    | SegDist:1521.11m.              |                                |
+|                           |                                | Tick:9223372036.85s            |                                |
++---------------------------+--------------------------------+--------------------------------+--------------------------------+
+```
 ### Limits and base units
 | Option        | Constraint                          | Unit             |
 |---------------|-------------------------------------|------------------|
 | WithSpeed     | min=0, max=1000, amplitude=4..512   | meter per second |
-| WithBattery   | min=0, max=100                      | percent          |
+| WithBattery   | min=0, max=100, chargeTime          | percent          |
 | WithModel     | min=1, max=64                       |                  |
 | WithElevation | min=0, max=10000, amplitude=4..512  | meters           |
 | WithOffline   | min=0, max=300                      | seconds          |

@@ -2,6 +2,7 @@ package gpsgen
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/mmadfox/go-gpsgen/navigator"
 	"github.com/mmadfox/go-gpsgen/route"
@@ -34,8 +35,9 @@ type Config struct {
 		Amplitude int     `json:"amplitude"`
 	} `json:"speed"`
 	Battery struct {
-		Max float64 `json:"max"`
-		Min float64 `json:"min"`
+		Max        float64       `json:"max"`
+		Min        float64       `json:"min"`
+		ChargeTime time.Duration `json:"chargeTime"`
 	} `json:"battery"`
 	Elevation struct {
 		Max       float64 `json:"max"`
@@ -61,6 +63,7 @@ func NewConfig() *Config {
 	conf.Speed.Amplitude = Amplitude16
 	conf.Battery.Min = 1
 	conf.Battery.Max = 100
+	conf.Battery.ChargeTime = 4 * time.Hour
 	conf.Elevation.Min = 5
 	conf.Elevation.Max = 130
 	conf.Elevation.Amplitude = Amplitude32
@@ -86,7 +89,7 @@ func (c *Config) NewDevice() (*Device, error) {
 		WithUserID(c.UserID),
 		WithRoutes(c.Routes),
 		WithSpeed(c.Speed.Min, c.Speed.Max, c.Speed.Amplitude),
-		WithBattery(c.Battery.Min, c.Battery.Max),
+		WithBattery(c.Battery.Min, c.Battery.Max, c.Battery.ChargeTime),
 		WithSensors(c.Sensors...),
 		WithElevation(c.Elevation.Min, c.Elevation.Max, c.Elevation.Amplitude),
 		WithOffline(c.Offline.Min, c.Offline.Max),

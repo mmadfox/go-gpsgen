@@ -117,6 +117,6 @@ func (t *Speed) String() string {
 //
 // Tick in the range from 0 to 1.
 func (t *Speed) Next(tick float64) {
-	point := t.gen.Point(tick)
-	t.val = point.Y
+	p := t.gen.Point(tick)
+	t.val = p.Y
 }

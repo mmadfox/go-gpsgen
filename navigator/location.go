@@ -1,6 +1,7 @@
 package navigator
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/icholy/utm"
@@ -56,4 +57,14 @@ func SetUTM(lat, lon float64, u *proto.UTM) {
 	u.LatZone = string(z.Letter)
 	u.Hemisphere = hemisphere
 	u.Srid = int64(z.SRID())
+}
+
+func FormatUTM(u *proto.UTM) string {
+	return fmt.Sprintf("UTMEasting:%.4f\nUTMNorthing:%.4f\nUTMZone:%d%s\n",
+		u.Easting, u.Northing, u.LongZone, u.LatZone)
+}
+
+func FormatDMS(d *proto.DMS) string {
+	return fmt.Sprintf("%d°%d'%f\"%s",
+		d.Degrees, d.Minutes, d.Seconds, d.Direction)
 }

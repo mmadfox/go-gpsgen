@@ -9,14 +9,14 @@ import (
 
 func TestCurveToProto(t *testing.T) {
 	controlPoint := 16
-	curve, err := RandomCurveWithMode(1, 10, controlPoint, ModeMinMax)
+	curve, err := RandomCurveWithMode(1, 10, controlPoint, ModeDefault)
 	require.NoError(t, err)
 	require.NotNil(t, curve)
 
 	protoCurve := curve.ToProto()
 	require.NotNil(t, protoCurve)
 	require.Equal(t, controlPoint, len(protoCurve.Points))
-	require.Equal(t, int(ModeMinMax), int(protoCurve.Mode))
+	require.Equal(t, int(ModeDefault), int(protoCurve.Mode))
 	for i := 0; i < len(curve.points); i++ {
 		require.Equal(t, curve.points[i].cp.X, protoCurve.Points[i].Cp.X)
 		require.Equal(t, curve.points[i].cp.Y, protoCurve.Points[i].Cp.Y)

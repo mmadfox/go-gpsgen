@@ -8,7 +8,7 @@ message DeviceSnapshot {
     bytes id = 1;
     string model = 2;
     TypeState speed = 3;  
-    TypeState battery = 4; 
+    BatteryState battery_charge = 4; 
     repeated SensorState sensors = 5; 
     NavigatorState navigator = 6;
     double loop = 7;
@@ -40,6 +40,12 @@ message TypeState {
     double val = 3;
     Curve gen = 4;
 }    
+
+message BatteryState {
+    double min = 1; 
+	double max = 2;
+    int64 charge_time = 4;
+} 
 
 message SensorState {
     double min = 1;

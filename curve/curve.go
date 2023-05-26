@@ -2,7 +2,6 @@ package curve
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
 
 	"github.com/mmadfox/go-gpsgen/proto"
@@ -16,14 +15,12 @@ type CurveMode uint16
 
 const (
 	ModeDefault = 1 << (16 - 1 - iota)
-	ModeMinMax
-	ModeMaxMin
 	ModeMinStart
 	ModeMinEnd
 )
 
 type Point struct {
-	X, Y, Z float64
+	X, Y float64
 }
 
 type point struct {
@@ -63,10 +60,6 @@ func New(cp []Point) (*Curve, error) {
 	}
 
 	return &curve, nil
-}
-
-func (c *Curve) Renew() {
-	// TODO:
 }
 
 func (c *Curve) ToProto() *proto.Curve {
@@ -138,55 +131,16 @@ func RandomCurveWithMode(min, max float64, pn int, m CurveMode) (*Curve, error) 
 		mode:   int(m),
 	}
 
-	if m&ModeMinMax != 0 {
-		if min > max {
-			return nil, fmt.Errorf("curve: min value greater or equal max %.4f > %.4f", min, max)
-		}
-		if min <= 0 && max != 0 {
-			return nil, fmt.Errorf("curve: min and max values are empty")
-		}
-		step := max / float64(pn)
+	for i := 0; i < pn; i++ {
 		var y float64
-		for i := 0; i < pn; i++ {
-			if i == 0 {
-				y = float64(min)
-			} else {
-				y = float64(min) + (float64(i) * float64(step))
-			}
-			curv.points[i] = point{vp: Point{X: float64(i), Y: y}}
+		if m&ModeMinStart != 0 && i == 0 {
+			y = float64(min)
+		} else if m&ModeMinEnd != 0 && i == pn-1 {
+			y = float64(min)
+		} else {
+			y = randomFloat(min, max)
 		}
-
-	} else if m&ModeMaxMin != 0 {
-		if min > max {
-			return nil, fmt.Errorf("curve: max value greater or equal min %.2f > %.2f", min, max)
-		}
-		if min < 0 && max != 0 {
-			return nil, fmt.Errorf("curve: min and max values are empty")
-		}
-		step := max / float64(pn)
-		var y float64
-		var i int
-		for p := pn; p > 0; p-- {
-			if p == pn {
-				y = float64(min)
-			} else {
-				y = float64(min) - (float64(i) * float64(step))
-			}
-			curv.points[i] = point{vp: Point{X: float64(i), Y: y}}
-			i++
-		}
-	} else if m&ModeDefault != 0 {
-		for i := 0; i < pn; i++ {
-			var y float64
-			if m&ModeMinStart != 0 && i == 0 {
-				y = float64(min)
-			} else if m&ModeMinEnd != 0 && i == pn-1 {
-				y = float64(min)
-			} else {
-				y = randomFloat(min, max)
-			}
-			curv.points[i] = point{vp: Point{X: float64(i * 10), Y: y}}
-		}
+		curv.points[i] = point{vp: Point{X: float64(i), Y: y}}
 	}
 
 	var w float64
