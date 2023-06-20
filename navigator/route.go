@@ -3,7 +3,8 @@ package navigator
 import (
 	"errors"
 
-	"github.com/mmadfox/go-gpsgen/proto"
+	pb "github.com/mmadfox/go-gpsgen/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -119,22 +120,35 @@ func (r *Route) EachSegment(track int, fn func(seg *Segment)) {
 	}
 }
 
-func (r *Route) ToProto() *proto.Route {
-	protoRoute := &proto.Route{
+func (r *Route) MarshalBinary() ([]byte, error) {
+	return proto.Marshal(r.ToProto())
+}
+
+func (r *Route) UnmarshalBinary(data []byte) error {
+	p := new(pb.Route)
+	if err := proto.Unmarshal(data, p); err != nil {
+		return err
+	}
+	r.FromProto(p)
+	return nil
+}
+
+func (r *Route) ToProto() *pb.Route {
+	protoRoute := &pb.Route{
 		Distance: r.dist,
-		Tracks:   make([]*proto.Route_Track, len(r.tracks)),
+		Tracks:   make([]*pb.Route_Track, len(r.tracks)),
 	}
 	for j := 0; j < len(r.tracks); j++ {
-		protoTrack := &proto.Route_Track{
-			Segmenets: make([]*proto.Route_Track_Segment, 0, len(r.tracks[j])),
+		protoTrack := &pb.Route_Track{
+			Segmenets: make([]*pb.Route_Track_Segment, 0, len(r.tracks[j])),
 		}
 		for s := 0; s < len(r.tracks[j]); s++ {
-			protoSegment := &proto.Route_Track_Segment{
-				PointA: &proto.Point{
+			protoSegment := &pb.Route_Track_Segment{
+				PointA: &pb.Point{
 					Lat: r.tracks[j][s].pointA.X,
 					Lon: r.tracks[j][s].pointA.Y,
 				},
-				PointB: &proto.Point{
+				PointB: &pb.Point{
 					Lat: r.tracks[j][s].pointB.X,
 					Lon: r.tracks[j][s].pointB.Y,
 				},
@@ -149,7 +163,7 @@ func (r *Route) ToProto() *proto.Route {
 	return protoRoute
 }
 
-func (r *Route) FromProto(route *proto.Route) {
+func (r *Route) FromProto(route *pb.Route) {
 	r.dist = route.Distance
 	r.tracks = make([][]*Segment, len(route.Tracks))
 	for j := 0; j < len(route.Tracks); j++ {
