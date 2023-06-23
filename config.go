@@ -155,11 +155,14 @@ func (c *Config) validateProperties() error {
 }
 
 func (c *Config) validateDescription() error {
+	if len(c.Description) == 0 {
+		return nil
+	}
 	if len(c.Description) < constraints.Description.Min {
-		return FormatConfigurationError("Description must be > %d", constraints.Description.Min)
+		return FormatConfigurationError("Description must be > %d chars", constraints.Description.Min)
 	}
 	if len(c.Description) > constraints.Description.Max {
-		return FormatConfigurationError("Description must be < %d", constraints.Description.Max)
+		return FormatConfigurationError("Description must be < %d chars", constraints.Description.Max)
 	}
 	return nil
 }
