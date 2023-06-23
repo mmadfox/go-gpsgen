@@ -207,6 +207,8 @@ func (d *Device) UnmarshalBinary(data []byte) error {
 		}
 	}
 
+	d.protoEncoder = pb.NewEncoder()
+
 	return nil
 }
 
