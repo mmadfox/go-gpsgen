@@ -5,11 +5,20 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/mmadfox/go-gpsgen/navigator"
 	"github.com/mmadfox/go-gpsgen/route"
 	"github.com/mmadfox/go-gpsgen/types"
 	"github.com/stretchr/testify/require"
 )
+
+func TestConfig_DeviceIDFromConfig(t *testing.T) {
+	conf := getFullValidConfig()
+	proc, err := conf.NewDevice()
+	require.NoError(t, err)
+	require.NotNil(t, proc)
+	require.Equal(t, conf.ID, proc.ID().String())
+}
 
 func TestConfig_Validate(t *testing.T) {
 	tests := []struct {
@@ -272,12 +281,15 @@ func TestConfig_Validate(t *testing.T) {
 			},
 			containsErr: fmt.Sprintf("Routes.MinDistance must be > %f", constraints.Routes.MinDistance),
 		},
+		{
+			name: "should return valid device",
+			conf: getFullValidConfig,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			conf := tt.conf()
-			err := conf.Validate()
-			if err != nil {
+			if err := conf.Validate(); err != nil {
 				require.Contains(t, err.Error(), tt.containsErr)
 			}
 		})
@@ -286,6 +298,7 @@ func TestConfig_Validate(t *testing.T) {
 
 func getFullValidConfig() *Config {
 	conf := NewConfig()
+	conf.ID = uuid.NewString()
 	conf.Model = "Model"
 	conf.UserID = "UserID"
 	conf.Properties = map[string]string{"foo": "bar", "xim": "mix"}

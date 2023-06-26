@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mmadfox/go-gpsgen/navigator"
 	"github.com/mmadfox/go-gpsgen/route"
 	"github.com/mmadfox/go-gpsgen/types"
@@ -25,6 +26,7 @@ func (err ConfigurationError) Error() string {
 
 // Config struct represents a device configuration.
 type Config struct {
+	ID          string            `json:"deviceID"`
 	Model       string            `json:"model"`
 	UserID      string            `json:"userId,omitempty"`
 	Properties  map[string]string `json:"properties,omitempty"`
@@ -81,10 +83,12 @@ func (c *Config) NewDevice() (*Device, error) {
 	if c == nil {
 		return nil, fmt.Errorf("<nil> pointer")
 	}
+
 	if err := c.Validate(); err != nil {
 		return nil, err
 	}
-	return NewDevice(
+
+	opts := []DeviceSetting{
 		WithModel(c.Model),
 		WithUserID(c.UserID),
 		WithRoutes(c.Routes),
@@ -95,7 +99,16 @@ func (c *Config) NewDevice() (*Device, error) {
 		WithOffline(c.Offline.Min, c.Offline.Max),
 		WithProps(c.Properties),
 		WithDescription(c.Description),
-	)
+	}
+	if len(c.ID) > 0 {
+		deviceID, err := uuid.Parse(c.ID)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, WithID(deviceID))
+	}
+
+	return NewDevice(opts...)
 }
 
 var constraints = DeviceConstraints()
@@ -106,6 +119,7 @@ func (c *Config) Validate() error {
 	if c.isValid {
 		return nil
 	}
+
 	funcs := []func() error{
 		c.validateModel,
 		c.validateProperties,
@@ -122,6 +136,7 @@ func (c *Config) Validate() error {
 			return err
 		}
 	}
+
 	c.isValid = true
 	return nil
 }
@@ -140,9 +155,11 @@ func (c *Config) validateProperties() error {
 	if len(c.Properties) < constraints.Properties.Min {
 		return FormatConfigurationError("Properties must be > %d", constraints.Properties.Min)
 	}
+
 	if len(c.Properties) > constraints.Properties.Max {
 		return FormatConfigurationError("Properties must be < %d", constraints.Properties.Max)
 	}
+
 	for k, v := range c.Properties {
 		if len(k) > constraints.Properties.MaxKeyLen {
 			return FormatConfigurationError("Properties.key{%s} must be < %d", k, constraints.Properties.MaxKeyLen)
@@ -151,6 +168,7 @@ func (c *Config) validateProperties() error {
 			return FormatConfigurationError("Properties.value{%s} must be < %d", v, constraints.Properties.MaxValueLen)
 		}
 	}
+
 	return nil
 }
 
@@ -158,12 +176,15 @@ func (c *Config) validateDescription() error {
 	if len(c.Description) == 0 {
 		return nil
 	}
+
 	if len(c.Description) < constraints.Description.Min {
 		return FormatConfigurationError("Description must be > %d chars", constraints.Description.Min)
 	}
+
 	if len(c.Description) > constraints.Description.Max {
 		return FormatConfigurationError("Description must be < %d chars", constraints.Description.Max)
 	}
+
 	return nil
 }
 
@@ -171,15 +192,19 @@ func (c *Config) validateSpeed() error {
 	if c.Speed.Min < constraints.Speed.Min {
 		return FormatConfigurationError("Speed.Min must be > %f", constraints.Speed.Min)
 	}
+
 	if c.Speed.Max > constraints.Speed.Max {
 		return FormatConfigurationError("Speed.Max must be < %f", constraints.Speed.Max)
 	}
+
 	if c.Speed.Amplitude < Amplitude4 {
 		return FormatConfigurationError("Speed.Amplitude must be > %d", Amplitude4)
 	}
+
 	if c.Speed.Amplitude > Amplitude512 {
 		return FormatConfigurationError("Speed.Amplitude must be < %d", Amplitude512)
 	}
+
 	return nil
 }
 
@@ -187,9 +212,11 @@ func (c *Config) validateBattery() error {
 	if c.Battery.Min < constraints.Battery.Min {
 		return FormatConfigurationError("Battery.Min must be > %f", constraints.Battery.Min)
 	}
+
 	if c.Battery.Max > constraints.Battery.Max {
 		return FormatConfigurationError("Battery.Max must be < %f", constraints.Battery.Max)
 	}
+
 	return nil
 }
 
@@ -197,15 +224,19 @@ func (c *Config) validateElevation() error {
 	if c.Elevation.Min < constraints.Elevation.Min {
 		return FormatConfigurationError("Elevation.Min must be > %f", constraints.Speed.Min)
 	}
+
 	if c.Speed.Max > constraints.Speed.Max {
 		return FormatConfigurationError("Elevation.Max must be < %f", constraints.Speed.Max)
 	}
+
 	if c.Speed.Amplitude < Amplitude4 {
 		return FormatConfigurationError("Elevation.Amplitude must be > %d", Amplitude4)
 	}
+
 	if c.Speed.Amplitude > Amplitude512 {
 		return FormatConfigurationError("Elevation.Amplitude must be < %d", Amplitude512)
 	}
+
 	return nil
 }
 
@@ -213,6 +244,7 @@ func (c *Config) validateSensors() error {
 	if len(c.Sensors) > constraints.Sensors.Max {
 		return FormatConfigurationError("Sensors.Max must be < %d", constraints.Sensors.Max)
 	}
+
 	for i := 0; i < len(c.Sensors); i++ {
 		if c.Sensors[i].Amplitude < Amplitude4 {
 			return FormatConfigurationError("Sensors[%d].Amplitude must be > %d", i, Amplitude4)
@@ -221,6 +253,7 @@ func (c *Config) validateSensors() error {
 			return FormatConfigurationError("Sensors[%d].Amplitude must be < %d", i, Amplitude512)
 		}
 	}
+
 	return nil
 }
 
@@ -235,9 +268,11 @@ func (c *Config) validateRoutes() error {
 	if len(c.Routes) < constraints.Routes.Min {
 		return FormatConfigurationError("Routes.Min must be > %d", constraints.Routes.Min)
 	}
+
 	if len(c.Routes) > constraints.Routes.Max {
 		return FormatConfigurationError("Routes.Max must be < %d", constraints.Routes.Max)
 	}
+
 	var distance float64
 	for i := 0; i < len(c.Routes); i++ {
 		route := c.Routes[i]
@@ -258,12 +293,15 @@ func (c *Config) validateRoutes() error {
 		}
 		distance += c.Routes[i].Distance()
 	}
+
 	if distance < constraints.Routes.MinDistance {
 		return FormatConfigurationError("Routes.MinDistance must be > %f", constraints.Routes.MinDistance)
 	}
+
 	if distance > constraints.Routes.MaxDistance {
 		return FormatConfigurationError("Routes.MaxDistance must be < %f", constraints.Routes.MaxDistance)
 	}
+
 	return nil
 }
 
