@@ -22,7 +22,8 @@ func main() {
 			if err := proto.Unmarshal(data, snap); err != nil {
 				panic(err)
 			}
-			fmt.Printf("model=%s, lat=%f, lon=%f, el=%f, curDist=%f\n",
+			fmt.Printf("id=%s, model=%s, lat=%f, lon=%f, el=%f, curDist=%f\n",
+				snap.Id,
 				snap.Model,
 				snap.Location.Lat,
 				snap.Location.Lon,

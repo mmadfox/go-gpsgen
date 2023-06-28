@@ -73,6 +73,7 @@ func NewDevice(settings ...DeviceSetting) (*Device, error) {
 		navigator:    nav,
 		protoEncoder: pb.NewEncoder(),
 		state: &pb.Device{
+			Id:               opts.id.String(),
 			Model:            opts.model,
 			Descr:            opts.descr,
 			UserId:           opts.userID,
