@@ -182,6 +182,7 @@ func (d *Device) UnmarshalBinary(data []byte) error {
 	d.descr = protoDev.Description
 	d.stateCh = make(chan struct{}, 1)
 	d.state = &pb.Device{
+		Id:     d.id.String(),
 		Model:  protoDev.Model,
 		Descr:  protoDev.Description,
 		UserId: protoDev.UserId,
