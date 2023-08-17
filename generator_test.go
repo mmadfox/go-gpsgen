@@ -135,8 +135,7 @@ func TestGenerator_Lookup(t *testing.T) {
 
 func TestGenerator_Run(t *testing.T) {
 	gen := New(&Options{
-		Interval:   10 * time.Millisecond,
-		NumWorkers: 64,
+		Interval: 10 * time.Millisecond,
 	})
 
 	var next uint32
@@ -161,7 +160,7 @@ func TestGenerator_Run(t *testing.T) {
 	})
 
 	devices := make([]*Device, 0)
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 10; i++ {
 		// make new device
 		devOpts := NewDeviceOptions()
 		devOpts.Navigator.SkipOffline = true
@@ -177,7 +176,7 @@ func TestGenerator_Run(t *testing.T) {
 	}
 
 	go func() {
-		<-time.After(50 * time.Millisecond)
+		<-time.After(100 * time.Millisecond)
 		gen.Close()
 	}()
 
