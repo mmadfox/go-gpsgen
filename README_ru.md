@@ -23,7 +23,6 @@ Language: [En](./README.md)
 
 - [Установка](#установка)
 - [Пример](#пример)
-- [Генерируемые данные](#генерируемые-данные)
 - Маршруты
   - [GeoJSON](#geojson)
   - [GPX](#gpx)
@@ -117,7 +116,7 @@ func terminate(fn func()) {
 ```go
 tracker := gpsgen.NewDroneTracker()
 
-route, err := gpsgen.GeoJSONDecode(geoJSONBytes)
+route, err := gpsgen.DecodeGeoJSONRoutes(geoJSONBytes)
 if err != nil {
 	panic(err)
 }
@@ -131,7 +130,7 @@ tracker.AddRoute(route...)
 ```go
 tracker := gpsgen.NewDroneTracker()
 
-route, err := gpsgen.GPXDecode(GPXBytes)
+route, err := gpsgen.DecodeGPXRoutes(GPXBytes)
 if err != nil {
 	panic(err)
 }

@@ -43,6 +43,9 @@ func NewTrack(points []geo.LatLonPoint) (*Track, error) {
 
 // RestoreTrack restores a track from a snapshot.
 func RestoreTrack(trackID, color string, points []geo.LatLonPoint) (*Track, error) {
+	if len(trackID) == 0 {
+		return nil, fmt.Errorf("gpsgen/navigator: trackID is empty")
+	}
 	segments, dist, err := makeSegments(points)
 	if err != nil {
 		return nil, err
@@ -77,11 +80,12 @@ func (t *Track) Name() Name {
 }
 
 // ChangeColor changes the color of the track.
-func (t *Track) ChangeColor(color colorful.Color) error {
-	if !color.IsValid() {
-		return fmt.Errorf("invalid track color %s", color.Hex())
+func (t *Track) ChangeColor(color string) error {
+	c, err := colorful.Hex(color)
+	if err != nil {
+		return err
 	}
-	t.color = color.Hex()
+	t.color = c.Hex()
 	t.nextVersion()
 	return nil
 }

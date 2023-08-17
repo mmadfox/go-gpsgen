@@ -59,46 +59,62 @@ message Snapshot {
         Curve gen = 7; // Optional curve generator.
     }
 
+    message Sensors {
+        repeated SensorType sensors = 1;
+    }
+
     // Navigator data for routes and distances.
     message Navigator {
-        // Route within the navigator.
         message Route {
-            // Segment within a route's track.
-            message Segment {
-                PointLatLon point_a = 1; // Starting point.
-                PointLatLon point_b = 2; // Ending point.
-                double distance = 3; // Distance between points.
-                double bearing = 4; // Bearing between points.
-                int64 index = 5; // Index of the segment.
-                int64 rel = 6; // Relative index within the route.
-            } // END SEGMENT
+            message Track {
+                message Segment {
+                    PointLatLon point_a = 1;
+                    PointLatLon point_b = 2;
+                    double distance = 3;
+                    double bearing = 4;
+                    int64 index = 5;
+                    int64 rel = 6;
+                } // END SEGMENT
 
-            string id = 1; // Route identifier.
-            repeated Segment segments = 2; // Segments within the route.
-            string color = 3; // Route color.
-            bytes props = 4; // Additional properties of the route.
-            double distance = 5; // Total distance of the route.
-            bool is_closed = 6; // Flag indicating if the route is closed.
-            string name = 7; // Route name.
-            int64 version = 9; // Route version.
+                string id = 1;
+                repeated Segment segmenets = 2;
+                string color = 3;
+                bytes props = 4;
+                double distance = 5;
+                bool is_closed = 6;
+                string name = 7;
+                int64 version = 9;
+            } // END TRACK
+
+            string id = 1;
+            double distance = 2;
+            string color = 3; 
+            repeated Track tracks = 4;
+            bytes props = 5; 
+            string name = 6;
+            int64 version = 7;
         } // END ROUTE
 
-        repeated Route routes = 1; // Routes within the navigator.
-        int64 route_index = 2; // Index of the current route.
-        int64 track_index = 3; // Index of the current track.
-        int64 segment_index = 4; // Index of the current segment.
-        double current_segment_distance = 5; // Current segment distance.
-        double current_route_distance = 6; // Current route distance.
-        double current_track_distance = 7; // Current track distance.
-        double current_distance = 8; // Current distance.
-        int64 offline_index = 9; // Index of offline data.
-        PointLatLon point = 10; // Geographic point.
-        SensorType elevation = 11; // Elevation sensor.
-        int64 offline_min = 12; // Minimum offline value.
-        int64 offline_max = 13; // Maximum offline value.
-        double distance = 14; // Total distance.
-        bool skip_offline = 15; // Flag to skip offline data.
-        int64 version = 16; // Navigator version.
+        message Routes {
+            repeated Route routes = 1;
+        }
+
+        repeated Route routes = 1;
+        int64 route_index = 2;
+        int64 track_index = 3;
+        int64 segment_index = 4;
+        double current_segment_distance = 5;
+        double current_route_distance = 6;
+        double current_track_distance = 7;
+        double current_distance = 8;
+        int64 offline_index = 9; 
+        PointLatLon point = 10;
+        SensorType elevation = 11;
+        int64 offline_min = 12; 
+        int64 offline_max = 13;
+        double distance = 14;
+        bool skip_offline = 15;
+        int64 version = 16;
     } // END NAVIGATOR
 
     string id = 1; // Snapshot identifier.

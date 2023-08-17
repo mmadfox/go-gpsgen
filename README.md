@@ -21,7 +21,6 @@ This library can be used in testing and debugging applications or devices depend
 
 - [Installation](#installation)
 - [Example](#example)
-- [Generated Data](#generated-data)
 - Routes
   - [GeoJSON](#geojson)
   - [GPX](#gpx)
@@ -115,7 +114,7 @@ func terminate(fn func()) {
 ```go
 tracker := gpsgen.NewDroneTracker()
 
-route, err := gpsgen.GeoJSONDecode(geoJSONBytes)
+route, err := gpsgen.DecodeGeoJSONRoutes(geoJSONBytes)
 if err != nil {
 	panic(err)
 }
@@ -129,7 +128,7 @@ tracker.AddRoute(route...)
 ```go
 tracker := gpsgen.NewDroneTracker()
 
-route, err := gpsgen.GPXDecode(GPXBytes)
+route, err := gpsgen.DecodeGPXRoutes(GPXBytes)
 if err != nil {
 	panic(err)
 }

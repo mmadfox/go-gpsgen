@@ -12,328 +12,352 @@ import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MESSAGE_TYPE } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
 /**
+ * Represents information about a device.
+ *
  * @generated from protobuf message proto.Device
  */
 export interface Device {
     /**
      * @generated from protobuf field: string id = 1;
      */
-    id: string;
+    id: string; // Device identifier.
     /**
      * @generated from protobuf field: string user_id = 2;
      */
-    userId: string;
+    userId: string; // User identifier.
     /**
      * @generated from protobuf field: double tick = 3;
      */
-    tick: number;
+    tick: number; // Timestamp.
     /**
      * @generated from protobuf field: double duration = 4;
      */
-    duration: number;
+    duration: number; // Duration of device operation.
     /**
      * @generated from protobuf field: string model = 5;
      */
-    model: string;
+    model: string; // Device model.
     /**
      * @generated from protobuf field: double speed = 6;
      */
-    speed: number;
+    speed: number; // Device speed.
     /**
      * @generated from protobuf field: proto.Device.Distance distance = 7;
      */
-    distance?: Device_Distance;
+    distance?: Device_Distance; // Distance information.
     /**
      * @generated from protobuf field: proto.Device.Battery battery = 8;
      */
-    battery?: Device_Battery;
+    battery?: Device_Battery; // Battery information.
     /**
      * @generated from protobuf field: proto.Device.Routes routes = 9;
      */
-    routes?: Device_Routes;
+    routes?: Device_Routes; // Routes associated with the device.
     /**
      * @generated from protobuf field: proto.Device.Location location = 10;
      */
-    location?: Device_Location;
+    location?: Device_Location; // Location information.
     /**
      * @generated from protobuf field: proto.Device.Navigator navigator = 11;
      */
-    navigator?: Device_Navigator;
+    navigator?: Device_Navigator; // Navigation data.
     /**
      * @generated from protobuf field: repeated proto.Device.Sensor sensors = 12;
      */
-    sensors: Device_Sensor[];
+    sensors: Device_Sensor[]; // List of sensors associated with the device.
     /**
      * @generated from protobuf field: string description = 14;
      */
-    description: string;
+    description: string; // Device description.
     /**
      * @generated from protobuf field: bool is_offline = 15;
      */
-    isOffline: boolean;
+    isOffline: boolean; // Flag indicating if the device is offline.
     /**
      * @generated from protobuf field: int64 offline_duration = 16;
      */
-    offlineDuration: bigint;
+    offlineDuration: bigint; // Duration of device offline mode.
     /**
      * @generated from protobuf field: string color = 17;
      */
-    color: string;
+    color: string; // Device color.
     /**
      * @generated from protobuf field: double time_estimate = 18;
      */
-    timeEstimate: number;
+    timeEstimate: number; // Estimated time.
 }
 /**
+ * Battery information for the device.
+ *
  * @generated from protobuf message proto.Device.Battery
  */
 export interface Device_Battery {
     /**
      * @generated from protobuf field: double charge = 1;
      */
-    charge: number;
+    charge: number; // Battery charge level.
     /**
      * @generated from protobuf field: int64 charge_time = 2;
      */
-    chargeTime: bigint;
+    chargeTime: bigint; // Time taken to charge the battery.
 }
 /**
+ * Routes associated with the device.
+ *
  * @generated from protobuf message proto.Device.Routes
  */
 export interface Device_Routes {
     /**
      * @generated from protobuf field: repeated proto.Device.Routes.Route routes = 1;
      */
-    routes: Device_Routes_Route[];
+    routes: Device_Routes_Route[]; // List of routes.
 }
 /**
+ * Represents a route within the routes.
+ *
  * @generated from protobuf message proto.Device.Routes.Route
  */
 export interface Device_Routes_Route {
     /**
      * @generated from protobuf field: string id = 1;
      */
-    id: string;
+    id: string; // Route identifier.
     /**
      * @generated from protobuf field: repeated proto.Device.Routes.Route.Track tracks = 2;
      */
-    tracks: Device_Routes_Route_Track[];
+    tracks: Device_Routes_Route_Track[]; // Tracks within the route.
     /**
      * @generated from protobuf field: double distance = 3;
      */
-    distance: number;
+    distance: number; // Total distance of the route.
     /**
      * @generated from protobuf field: string color = 4;
      */
-    color: string;
+    color: string; // Color of the route.
     /**
      * @generated from protobuf field: bytes props = 5;
      */
-    props: Uint8Array;
+    props: Uint8Array; // Additional properties of the route.
     /**
      * @generated from protobuf field: int64 props_count = 6;
      */
-    propsCount: bigint;
+    propsCount: bigint; // Number of additional properties.
 }
 /**
+ * Represents a track within a route.
+ *
  * @generated from protobuf message proto.Device.Routes.Route.Track
  */
 export interface Device_Routes_Route_Track {
     /**
      * @generated from protobuf field: double distance = 1;
      */
-    distance: number;
+    distance: number; // Total distance of the track.
     /**
      * @generated from protobuf field: int64 num_segments = 2;
      */
-    numSegments: bigint;
+    numSegments: bigint; // Number of segments in the track.
     /**
      * @generated from protobuf field: string color = 3;
      */
-    color: string;
+    color: string; // Color of the track.
     /**
      * @generated from protobuf field: bytes props = 4;
      */
-    props: Uint8Array;
+    props: Uint8Array; // Additional properties of the track.
     /**
      * @generated from protobuf field: int64 props_count = 5;
      */
-    propsCount: bigint;
+    propsCount: bigint; // Number of additional properties.
 }
 /**
+ * Represents a sensor associated with the device.
+ *
  * @generated from protobuf message proto.Device.Sensor
  */
 export interface Device_Sensor {
     /**
      * @generated from protobuf field: string id = 1;
      */
-    id: string;
+    id: string; // Sensor identifier.
     /**
      * @generated from protobuf field: string name = 2;
      */
-    name: string;
+    name: string; // Sensor name.
     /**
      * @generated from protobuf field: double val_x = 3;
      */
-    valX: number;
+    valX: number; // X-axis value of the sensor.
     /**
      * @generated from protobuf field: double val_y = 4;
      */
-    valY: number;
+    valY: number; // Y-axis value of the sensor.
 }
 /**
+ * Represents navigation data for the device.
+ *
  * @generated from protobuf message proto.Device.Navigator
  */
 export interface Device_Navigator {
     /**
      * @generated from protobuf field: int64 current_route_index = 1;
      */
-    currentRouteIndex: bigint;
+    currentRouteIndex: bigint; // Current route index.
     /**
      * @generated from protobuf field: int64 current_track_index = 2;
      */
-    currentTrackIndex: bigint;
+    currentTrackIndex: bigint; // Current track index.
     /**
      * @generated from protobuf field: int64 current_segment_index = 3;
      */
-    currentSegmentIndex: bigint;
+    currentSegmentIndex: bigint; // Current segment index.
 }
 /**
+ * Represents distance information.
+ *
  * @generated from protobuf message proto.Device.Distance
  */
 export interface Device_Distance {
     /**
      * @generated from protobuf field: double distance = 1;
      */
-    distance: number;
+    distance: number; // Total distance.
     /**
      * @generated from protobuf field: double current_distance = 2;
      */
-    currentDistance: number;
+    currentDistance: number; // Current distance.
     /**
      * @generated from protobuf field: double route_distance = 3;
      */
-    routeDistance: number;
+    routeDistance: number; // Total route distance.
     /**
      * @generated from protobuf field: double current_route_distance = 4;
      */
-    currentRouteDistance: number;
+    currentRouteDistance: number; // Current route distance.
     /**
      * @generated from protobuf field: double track_distance = 5;
      */
-    trackDistance: number;
+    trackDistance: number; // Total track distance.
     /**
      * @generated from protobuf field: double current_track_distance = 6;
      */
-    currentTrackDistance: number;
+    currentTrackDistance: number; // Current track distance.
     /**
      * @generated from protobuf field: double segment_distance = 7;
      */
-    segmentDistance: number;
+    segmentDistance: number; // Total segment distance.
     /**
      * @generated from protobuf field: double current_segment_distance = 8;
      */
-    currentSegmentDistance: number;
+    currentSegmentDistance: number; // Current segment distance.
 }
 /**
+ * Represents location information.
+ *
  * @generated from protobuf message proto.Device.Location
  */
 export interface Device_Location {
     /**
      * @generated from protobuf field: double lat = 1;
      */
-    lat: number;
+    lat: number; // Latitude.
     /**
      * @generated from protobuf field: double lon = 2;
      */
-    lon: number;
+    lon: number; // Longitude.
     /**
      * @generated from protobuf field: double elevation = 3;
      */
-    elevation: number;
+    elevation: number; // Elevation above sea level.
     /**
      * @generated from protobuf field: double bearing = 4;
      */
-    bearing: number;
+    bearing: number; // Bearing direction.
     /**
      * @generated from protobuf field: proto.Device.Location.DMS lat_dms = 12;
      */
-    latDms?: Device_Location_DMS;
+    latDms?: Device_Location_DMS; // Latitude in degrees-minutes-seconds.
     /**
      * @generated from protobuf field: proto.Device.Location.DMS lon_dms = 13;
      */
-    lonDms?: Device_Location_DMS;
+    lonDms?: Device_Location_DMS; // Longitude in degrees-minutes-seconds.
     /**
      * @generated from protobuf field: proto.Device.Location.UTM utm = 14;
      */
-    utm?: Device_Location_UTM;
+    utm?: Device_Location_UTM; // UTM coordinates.
 }
 /**
+ * Represents degrees-minutes-seconds for latitude or longitude.
+ *
  * @generated from protobuf message proto.Device.Location.DMS
  */
 export interface Device_Location_DMS {
     /**
      * @generated from protobuf field: int64 degrees = 1;
      */
-    degrees: bigint;
+    degrees: bigint; // Degrees.
     /**
      * @generated from protobuf field: int64 minutes = 2;
      */
-    minutes: bigint;
+    minutes: bigint; // Minutes.
     /**
      * @generated from protobuf field: double seconds = 3;
      */
-    seconds: number;
+    seconds: number; // Seconds.
     /**
      * @generated from protobuf field: string direction = 4;
      */
-    direction: string;
+    direction: string; // Direction (N/S/E/W).
 }
 /**
+ * Represents Universal Transverse Mercator (UTM) coordinates.
+ *
  * @generated from protobuf message proto.Device.Location.UTM
  */
 export interface Device_Location_UTM {
     /**
      * @generated from protobuf field: double central_meridian = 1;
      */
-    centralMeridian: number;
+    centralMeridian: number; // Central meridian.
     /**
      * @generated from protobuf field: double easting = 2;
      */
-    easting: number;
+    easting: number; // Easting value.
     /**
      * @generated from protobuf field: double northing = 3;
      */
-    northing: number;
+    northing: number; // Northing value.
     /**
      * @generated from protobuf field: int64 long_zone = 4;
      */
-    longZone: bigint;
+    longZone: bigint; // Longitudinal zone.
     /**
      * @generated from protobuf field: string lat_zone = 5;
      */
-    latZone: string;
+    latZone: string; // Latitude zone.
     /**
      * @generated from protobuf field: string hemisphere = 6;
      */
-    hemisphere: string;
+    hemisphere: string; // Hemisphere (N/S).
     /**
      * @generated from protobuf field: int64 srid = 7;
      */
-    srid: bigint;
+    srid: bigint; // Spatial Reference Identifier.
 }
 /**
+ * Represents a packet of data containing device information.
+ *
  * @generated from protobuf message proto.Packet
  */
 export interface Packet {
     /**
      * @generated from protobuf field: repeated proto.Device devices = 1;
      */
-    devices: Device[];
+    devices: Device[]; // List of devices in the packet.
     /**
      * @generated from protobuf field: int64 timestamp = 2;
      */
-    timestamp: bigint;
+    timestamp: bigint; // Timestamp for the packet.
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class Device$Type extends MessageType<Device> {

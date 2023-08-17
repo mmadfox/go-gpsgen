@@ -3,6 +3,7 @@ package navigator
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/mmadfox/go-gpsgen/geo"
 	"github.com/stretchr/testify/require"
 )
@@ -114,4 +115,94 @@ func TestTrack_FromSnapshot(t *testing.T) {
 	require.Equal(t, snapshot.IsClosed, track.IsClosed())
 	require.Equal(t, len(snapshot.Segmenets), track.NumSegments())
 	require.NotEmpty(t, track.Props())
+}
+
+func TestTrack_Restore(t *testing.T) {
+	expectedTrackID := uuid.NewString()
+	expectedColor := "#ff0000"
+	trk, err := RestoreTrack(expectedTrackID, expectedColor, []geo.LatLonPoint{
+		{Lon: 106.49659165973264, Lat: 29.532430319999506},
+		{Lon: 106.49863645147855, Lat: 29.53127911431376},
+		{Lon: 106.49775438445101, Lat: 29.530488379584682},
+	})
+	require.NotNil(t, trk)
+	require.NoError(t, err)
+	require.Equal(t, expectedTrackID, trk.ID())
+	require.Equal(t, expectedColor, trk.Color())
+}
+
+func TestTrack_RestoreNegative(t *testing.T) {
+	expectedTrackID := uuid.NewString()
+	expectedColor := "#ff0000"
+
+	trk, err := RestoreTrack(expectedTrackID, expectedColor, []geo.LatLonPoint{})
+	require.Nil(t, trk)
+	require.Error(t, err)
+
+	trk, err = RestoreTrack("", expectedColor, []geo.LatLonPoint{})
+	require.Nil(t, trk)
+	require.Error(t, err)
+}
+
+func TestTrack_ChangeColor(t *testing.T) {
+	expectedColor := "#ffffff"
+	trk, err := RestoreTrack(uuid.NewString(), "", []geo.LatLonPoint{
+		{Lon: 106.49659165973264, Lat: 29.532430319999506},
+		{Lon: 106.49863645147855, Lat: 29.53127911431376},
+		{Lon: 106.49775438445101, Lat: 29.530488379584682},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, trk)
+	require.Empty(t, trk.Color())
+
+	err = trk.ChangeColor(expectedColor)
+	require.NoError(t, err)
+	require.Equal(t, expectedColor, trk.Color())
+}
+
+func TestTrack_ChangeColorNegative(t *testing.T) {
+	trk, err := RestoreTrack(uuid.NewString(), "", []geo.LatLonPoint{
+		{Lon: 106.49659165973264, Lat: 29.532430319999506},
+		{Lon: 106.49863645147855, Lat: 29.53127911431376},
+		{Lon: 106.49775438445101, Lat: 29.530488379584682},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, trk)
+	require.Empty(t, trk.Color())
+
+	err = trk.ChangeColor("")
+	require.Error(t, err)
+
+	err = trk.ChangeColor("#ff")
+	require.Error(t, err)
+}
+
+func TestTrack_ChangeName(t *testing.T) {
+	expectedName := "someName"
+	trk, err := RestoreTrack(uuid.NewString(), "", []geo.LatLonPoint{
+		{Lon: 106.49659165973264, Lat: 29.532430319999506},
+		{Lon: 106.49863645147855, Lat: 29.53127911431376},
+		{Lon: 106.49775438445101, Lat: 29.530488379584682},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, trk)
+	require.Empty(t, trk.Name())
+
+	err = trk.ChangeName(expectedName)
+	require.NoError(t, err)
+	require.Equal(t, expectedName, trk.Name().String())
+}
+
+func TestTrack_ChangeNameNegative(t *testing.T) {
+	expectedName := ""
+	trk, err := RestoreTrack(uuid.NewString(), "", []geo.LatLonPoint{
+		{Lon: 106.49659165973264, Lat: 29.532430319999506},
+		{Lon: 106.49863645147855, Lat: 29.53127911431376},
+		{Lon: 106.49775438445101, Lat: 29.530488379584682},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, trk)
+
+	err = trk.ChangeName(expectedName)
+	require.Error(t, err)
 }

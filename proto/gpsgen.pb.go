@@ -20,28 +20,29 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Represents information about a device.
 type Device struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id              string            `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId          string            `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Tick            float64           `protobuf:"fixed64,3,opt,name=tick,proto3" json:"tick,omitempty"`
-	Duration        float64           `protobuf:"fixed64,4,opt,name=duration,proto3" json:"duration,omitempty"`
-	Model           string            `protobuf:"bytes,5,opt,name=model,proto3" json:"model,omitempty"`
-	Speed           float64           `protobuf:"fixed64,6,opt,name=speed,proto3" json:"speed,omitempty"`
-	Distance        *Device_Distance  `protobuf:"bytes,7,opt,name=distance,proto3" json:"distance,omitempty"`
-	Battery         *Device_Battery   `protobuf:"bytes,8,opt,name=battery,proto3" json:"battery,omitempty"`
-	Routes          *Device_Routes    `protobuf:"bytes,9,opt,name=routes,proto3" json:"routes,omitempty"`
-	Location        *Device_Location  `protobuf:"bytes,10,opt,name=location,proto3" json:"location,omitempty"`
-	Navigator       *Device_Navigator `protobuf:"bytes,11,opt,name=navigator,proto3" json:"navigator,omitempty"`
-	Sensors         []*Device_Sensor  `protobuf:"bytes,12,rep,name=sensors,proto3" json:"sensors,omitempty"`
-	Description     string            `protobuf:"bytes,14,opt,name=description,proto3" json:"description,omitempty"`
-	IsOffline       bool              `protobuf:"varint,15,opt,name=is_offline,json=isOffline,proto3" json:"is_offline,omitempty"`
-	OfflineDuration int64             `protobuf:"varint,16,opt,name=offline_duration,json=offlineDuration,proto3" json:"offline_duration,omitempty"`
-	Color           string            `protobuf:"bytes,17,opt,name=color,proto3" json:"color,omitempty"`
-	TimeEstimate    float64           `protobuf:"fixed64,18,opt,name=time_estimate,json=timeEstimate,proto3" json:"time_estimate,omitempty"`
+	Id              string            `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`                                                    // Device identifier.
+	UserId          string            `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`                              // User identifier.
+	Tick            float64           `protobuf:"fixed64,3,opt,name=tick,proto3" json:"tick,omitempty"`                                              // Timestamp.
+	Duration        float64           `protobuf:"fixed64,4,opt,name=duration,proto3" json:"duration,omitempty"`                                      // Duration of device operation.
+	Model           string            `protobuf:"bytes,5,opt,name=model,proto3" json:"model,omitempty"`                                              // Device model.
+	Speed           float64           `protobuf:"fixed64,6,opt,name=speed,proto3" json:"speed,omitempty"`                                            // Device speed.
+	Distance        *Device_Distance  `protobuf:"bytes,7,opt,name=distance,proto3" json:"distance,omitempty"`                                        // Distance information.
+	Battery         *Device_Battery   `protobuf:"bytes,8,opt,name=battery,proto3" json:"battery,omitempty"`                                          // Battery information.
+	Routes          *Device_Routes    `protobuf:"bytes,9,opt,name=routes,proto3" json:"routes,omitempty"`                                            // Routes associated with the device.
+	Location        *Device_Location  `protobuf:"bytes,10,opt,name=location,proto3" json:"location,omitempty"`                                       // Location information.
+	Navigator       *Device_Navigator `protobuf:"bytes,11,opt,name=navigator,proto3" json:"navigator,omitempty"`                                     // Navigation data.
+	Sensors         []*Device_Sensor  `protobuf:"bytes,12,rep,name=sensors,proto3" json:"sensors,omitempty"`                                         // List of sensors associated with the device.
+	Description     string            `protobuf:"bytes,14,opt,name=description,proto3" json:"description,omitempty"`                                 // Device description.
+	IsOffline       bool              `protobuf:"varint,15,opt,name=is_offline,json=isOffline,proto3" json:"is_offline,omitempty"`                   // Flag indicating if the device is offline.
+	OfflineDuration int64             `protobuf:"varint,16,opt,name=offline_duration,json=offlineDuration,proto3" json:"offline_duration,omitempty"` // Duration of device offline mode.
+	Color           string            `protobuf:"bytes,17,opt,name=color,proto3" json:"color,omitempty"`                                             // Device color.
+	TimeEstimate    float64           `protobuf:"fixed64,18,opt,name=time_estimate,json=timeEstimate,proto3" json:"time_estimate,omitempty"`         // Estimated time.
 }
 
 func (x *Device) Reset() {
@@ -195,13 +196,14 @@ func (x *Device) GetTimeEstimate() float64 {
 	return 0
 }
 
+// Represents a packet of data containing device information.
 type Packet struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Devices   []*Device `protobuf:"bytes,1,rep,name=devices,proto3" json:"devices,omitempty"`
-	Timestamp int64     `protobuf:"varint,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Devices   []*Device `protobuf:"bytes,1,rep,name=devices,proto3" json:"devices,omitempty"`      // List of devices in the packet.
+	Timestamp int64     `protobuf:"varint,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"` // Timestamp for the packet.
 }
 
 func (x *Packet) Reset() {
@@ -250,13 +252,14 @@ func (x *Packet) GetTimestamp() int64 {
 	return 0
 }
 
+// Battery information for the device.
 type Device_Battery struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Charge     float64 `protobuf:"fixed64,1,opt,name=charge,proto3" json:"charge,omitempty"`
-	ChargeTime int64   `protobuf:"varint,2,opt,name=charge_time,json=chargeTime,proto3" json:"charge_time,omitempty"`
+	Charge     float64 `protobuf:"fixed64,1,opt,name=charge,proto3" json:"charge,omitempty"`                          // Battery charge level.
+	ChargeTime int64   `protobuf:"varint,2,opt,name=charge_time,json=chargeTime,proto3" json:"charge_time,omitempty"` // Time taken to charge the battery.
 }
 
 func (x *Device_Battery) Reset() {
@@ -305,12 +308,13 @@ func (x *Device_Battery) GetChargeTime() int64 {
 	return 0
 }
 
+// Routes associated with the device.
 type Device_Routes struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Routes []*Device_Routes_Route `protobuf:"bytes,1,rep,name=routes,proto3" json:"routes,omitempty"`
+	Routes []*Device_Routes_Route `protobuf:"bytes,1,rep,name=routes,proto3" json:"routes,omitempty"` // List of routes.
 }
 
 func (x *Device_Routes) Reset() {
@@ -352,15 +356,16 @@ func (x *Device_Routes) GetRoutes() []*Device_Routes_Route {
 	return nil
 }
 
+// Represents a sensor associated with the device.
 type Device_Sensor struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id   string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name string  `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	ValX float64 `protobuf:"fixed64,3,opt,name=val_x,json=valX,proto3" json:"val_x,omitempty"`
-	ValY float64 `protobuf:"fixed64,4,opt,name=val_y,json=valY,proto3" json:"val_y,omitempty"`
+	Id   string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`                   // Sensor identifier.
+	Name string  `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`               // Sensor name.
+	ValX float64 `protobuf:"fixed64,3,opt,name=val_x,json=valX,proto3" json:"val_x,omitempty"` // X-axis value of the sensor.
+	ValY float64 `protobuf:"fixed64,4,opt,name=val_y,json=valY,proto3" json:"val_y,omitempty"` // Y-axis value of the sensor.
 }
 
 func (x *Device_Sensor) Reset() {
@@ -423,14 +428,15 @@ func (x *Device_Sensor) GetValY() float64 {
 	return 0
 }
 
+// Represents navigation data for the device.
 type Device_Navigator struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	CurrentRouteIndex   int64 `protobuf:"varint,1,opt,name=current_route_index,json=currentRouteIndex,proto3" json:"current_route_index,omitempty"`
-	CurrentTrackIndex   int64 `protobuf:"varint,2,opt,name=current_track_index,json=currentTrackIndex,proto3" json:"current_track_index,omitempty"`
-	CurrentSegmentIndex int64 `protobuf:"varint,3,opt,name=current_segment_index,json=currentSegmentIndex,proto3" json:"current_segment_index,omitempty"`
+	CurrentRouteIndex   int64 `protobuf:"varint,1,opt,name=current_route_index,json=currentRouteIndex,proto3" json:"current_route_index,omitempty"`       // Current route index.
+	CurrentTrackIndex   int64 `protobuf:"varint,2,opt,name=current_track_index,json=currentTrackIndex,proto3" json:"current_track_index,omitempty"`       // Current track index.
+	CurrentSegmentIndex int64 `protobuf:"varint,3,opt,name=current_segment_index,json=currentSegmentIndex,proto3" json:"current_segment_index,omitempty"` // Current segment index.
 }
 
 func (x *Device_Navigator) Reset() {
@@ -486,19 +492,20 @@ func (x *Device_Navigator) GetCurrentSegmentIndex() int64 {
 	return 0
 }
 
+// Represents distance information.
 type Device_Distance struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Distance               float64 `protobuf:"fixed64,1,opt,name=distance,proto3" json:"distance,omitempty"`
-	CurrentDistance        float64 `protobuf:"fixed64,2,opt,name=current_distance,json=currentDistance,proto3" json:"current_distance,omitempty"`
-	RouteDistance          float64 `protobuf:"fixed64,3,opt,name=route_distance,json=routeDistance,proto3" json:"route_distance,omitempty"`
-	CurrentRouteDistance   float64 `protobuf:"fixed64,4,opt,name=current_route_distance,json=currentRouteDistance,proto3" json:"current_route_distance,omitempty"`
-	TrackDistance          float64 `protobuf:"fixed64,5,opt,name=track_distance,json=trackDistance,proto3" json:"track_distance,omitempty"`
-	CurrentTrackDistance   float64 `protobuf:"fixed64,6,opt,name=current_track_distance,json=currentTrackDistance,proto3" json:"current_track_distance,omitempty"`
-	SegmentDistance        float64 `protobuf:"fixed64,7,opt,name=segment_distance,json=segmentDistance,proto3" json:"segment_distance,omitempty"`
-	CurrentSegmentDistance float64 `protobuf:"fixed64,8,opt,name=current_segment_distance,json=currentSegmentDistance,proto3" json:"current_segment_distance,omitempty"`
+	Distance               float64 `protobuf:"fixed64,1,opt,name=distance,proto3" json:"distance,omitempty"`                                                             // Total distance.
+	CurrentDistance        float64 `protobuf:"fixed64,2,opt,name=current_distance,json=currentDistance,proto3" json:"current_distance,omitempty"`                        // Current distance.
+	RouteDistance          float64 `protobuf:"fixed64,3,opt,name=route_distance,json=routeDistance,proto3" json:"route_distance,omitempty"`                              // Total route distance.
+	CurrentRouteDistance   float64 `protobuf:"fixed64,4,opt,name=current_route_distance,json=currentRouteDistance,proto3" json:"current_route_distance,omitempty"`       // Current route distance.
+	TrackDistance          float64 `protobuf:"fixed64,5,opt,name=track_distance,json=trackDistance,proto3" json:"track_distance,omitempty"`                              // Total track distance.
+	CurrentTrackDistance   float64 `protobuf:"fixed64,6,opt,name=current_track_distance,json=currentTrackDistance,proto3" json:"current_track_distance,omitempty"`       // Current track distance.
+	SegmentDistance        float64 `protobuf:"fixed64,7,opt,name=segment_distance,json=segmentDistance,proto3" json:"segment_distance,omitempty"`                        // Total segment distance.
+	CurrentSegmentDistance float64 `protobuf:"fixed64,8,opt,name=current_segment_distance,json=currentSegmentDistance,proto3" json:"current_segment_distance,omitempty"` // Current segment distance.
 }
 
 func (x *Device_Distance) Reset() {
@@ -589,18 +596,19 @@ func (x *Device_Distance) GetCurrentSegmentDistance() float64 {
 	return 0
 }
 
+// Represents location information.
 type Device_Location struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Lat       float64              `protobuf:"fixed64,1,opt,name=lat,proto3" json:"lat,omitempty"`
-	Lon       float64              `protobuf:"fixed64,2,opt,name=lon,proto3" json:"lon,omitempty"`
-	Elevation float64              `protobuf:"fixed64,3,opt,name=elevation,proto3" json:"elevation,omitempty"`
-	Bearing   float64              `protobuf:"fixed64,4,opt,name=bearing,proto3" json:"bearing,omitempty"`
-	LatDms    *Device_Location_DMS `protobuf:"bytes,12,opt,name=lat_dms,json=latDms,proto3" json:"lat_dms,omitempty"`
-	LonDms    *Device_Location_DMS `protobuf:"bytes,13,opt,name=lon_dms,json=lonDms,proto3" json:"lon_dms,omitempty"`
-	Utm       *Device_Location_UTM `protobuf:"bytes,14,opt,name=utm,proto3" json:"utm,omitempty"`
+	Lat       float64              `protobuf:"fixed64,1,opt,name=lat,proto3" json:"lat,omitempty"`                    // Latitude.
+	Lon       float64              `protobuf:"fixed64,2,opt,name=lon,proto3" json:"lon,omitempty"`                    // Longitude.
+	Elevation float64              `protobuf:"fixed64,3,opt,name=elevation,proto3" json:"elevation,omitempty"`        // Elevation above sea level.
+	Bearing   float64              `protobuf:"fixed64,4,opt,name=bearing,proto3" json:"bearing,omitempty"`            // Bearing direction.
+	LatDms    *Device_Location_DMS `protobuf:"bytes,12,opt,name=lat_dms,json=latDms,proto3" json:"lat_dms,omitempty"` // Latitude in degrees-minutes-seconds.
+	LonDms    *Device_Location_DMS `protobuf:"bytes,13,opt,name=lon_dms,json=lonDms,proto3" json:"lon_dms,omitempty"` // Longitude in degrees-minutes-seconds.
+	Utm       *Device_Location_UTM `protobuf:"bytes,14,opt,name=utm,proto3" json:"utm,omitempty"`                     // UTM coordinates.
 }
 
 func (x *Device_Location) Reset() {
@@ -684,17 +692,18 @@ func (x *Device_Location) GetUtm() *Device_Location_UTM {
 	return nil
 }
 
+// Represents a route within the routes.
 type Device_Routes_Route struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id         string                       `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Tracks     []*Device_Routes_Route_Track `protobuf:"bytes,2,rep,name=tracks,proto3" json:"tracks,omitempty"`
-	Distance   float64                      `protobuf:"fixed64,3,opt,name=distance,proto3" json:"distance,omitempty"`
-	Color      string                       `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`
-	Props      []byte                       `protobuf:"bytes,5,opt,name=props,proto3" json:"props,omitempty"`
-	PropsCount int64                        `protobuf:"varint,6,opt,name=props_count,json=propsCount,proto3" json:"props_count,omitempty"`
+	Id         string                       `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`                                    // Route identifier.
+	Tracks     []*Device_Routes_Route_Track `protobuf:"bytes,2,rep,name=tracks,proto3" json:"tracks,omitempty"`                            // Tracks within the route.
+	Distance   float64                      `protobuf:"fixed64,3,opt,name=distance,proto3" json:"distance,omitempty"`                      // Total distance of the route.
+	Color      string                       `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`                              // Color of the route.
+	Props      []byte                       `protobuf:"bytes,5,opt,name=props,proto3" json:"props,omitempty"`                              // Additional properties of the route.
+	PropsCount int64                        `protobuf:"varint,6,opt,name=props_count,json=propsCount,proto3" json:"props_count,omitempty"` // Number of additional properties.
 }
 
 func (x *Device_Routes_Route) Reset() {
@@ -771,16 +780,17 @@ func (x *Device_Routes_Route) GetPropsCount() int64 {
 	return 0
 }
 
+// Represents a track within a route.
 type Device_Routes_Route_Track struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Distance    float64 `protobuf:"fixed64,1,opt,name=distance,proto3" json:"distance,omitempty"`
-	NumSegments int64   `protobuf:"varint,2,opt,name=num_segments,json=numSegments,proto3" json:"num_segments,omitempty"`
-	Color       string  `protobuf:"bytes,3,opt,name=color,proto3" json:"color,omitempty"`
-	Props       []byte  `protobuf:"bytes,4,opt,name=props,proto3" json:"props,omitempty"`
-	PropsCount  int64   `protobuf:"varint,5,opt,name=props_count,json=propsCount,proto3" json:"props_count,omitempty"`
+	Distance    float64 `protobuf:"fixed64,1,opt,name=distance,proto3" json:"distance,omitempty"`                         // Total distance of the track.
+	NumSegments int64   `protobuf:"varint,2,opt,name=num_segments,json=numSegments,proto3" json:"num_segments,omitempty"` // Number of segments in the track.
+	Color       string  `protobuf:"bytes,3,opt,name=color,proto3" json:"color,omitempty"`                                 // Color of the track.
+	Props       []byte  `protobuf:"bytes,4,opt,name=props,proto3" json:"props,omitempty"`                                 // Additional properties of the track.
+	PropsCount  int64   `protobuf:"varint,5,opt,name=props_count,json=propsCount,proto3" json:"props_count,omitempty"`    // Number of additional properties.
 }
 
 func (x *Device_Routes_Route_Track) Reset() {
@@ -850,15 +860,16 @@ func (x *Device_Routes_Route_Track) GetPropsCount() int64 {
 	return 0
 }
 
+// Represents degrees-minutes-seconds for latitude or longitude.
 type Device_Location_DMS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Degrees   int64   `protobuf:"varint,1,opt,name=degrees,proto3" json:"degrees,omitempty"`
-	Minutes   int64   `protobuf:"varint,2,opt,name=minutes,proto3" json:"minutes,omitempty"`
-	Seconds   float64 `protobuf:"fixed64,3,opt,name=seconds,proto3" json:"seconds,omitempty"`
-	Direction string  `protobuf:"bytes,4,opt,name=direction,proto3" json:"direction,omitempty"`
+	Degrees   int64   `protobuf:"varint,1,opt,name=degrees,proto3" json:"degrees,omitempty"`    // Degrees.
+	Minutes   int64   `protobuf:"varint,2,opt,name=minutes,proto3" json:"minutes,omitempty"`    // Minutes.
+	Seconds   float64 `protobuf:"fixed64,3,opt,name=seconds,proto3" json:"seconds,omitempty"`   // Seconds.
+	Direction string  `protobuf:"bytes,4,opt,name=direction,proto3" json:"direction,omitempty"` // Direction (N/S/E/W).
 }
 
 func (x *Device_Location_DMS) Reset() {
@@ -921,18 +932,19 @@ func (x *Device_Location_DMS) GetDirection() string {
 	return ""
 }
 
+// Represents Universal Transverse Mercator (UTM) coordinates.
 type Device_Location_UTM struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	CentralMeridian float64 `protobuf:"fixed64,1,opt,name=central_meridian,json=centralMeridian,proto3" json:"central_meridian,omitempty"`
-	Easting         float64 `protobuf:"fixed64,2,opt,name=easting,proto3" json:"easting,omitempty"`
-	Northing        float64 `protobuf:"fixed64,3,opt,name=northing,proto3" json:"northing,omitempty"`
-	LongZone        int64   `protobuf:"varint,4,opt,name=long_zone,json=longZone,proto3" json:"long_zone,omitempty"`
-	LatZone         string  `protobuf:"bytes,5,opt,name=lat_zone,json=latZone,proto3" json:"lat_zone,omitempty"`
-	Hemisphere      string  `protobuf:"bytes,6,opt,name=hemisphere,proto3" json:"hemisphere,omitempty"`
-	Srid            int64   `protobuf:"varint,7,opt,name=srid,proto3" json:"srid,omitempty"`
+	CentralMeridian float64 `protobuf:"fixed64,1,opt,name=central_meridian,json=centralMeridian,proto3" json:"central_meridian,omitempty"` // Central meridian.
+	Easting         float64 `protobuf:"fixed64,2,opt,name=easting,proto3" json:"easting,omitempty"`                                        // Easting value.
+	Northing        float64 `protobuf:"fixed64,3,opt,name=northing,proto3" json:"northing,omitempty"`                                      // Northing value.
+	LongZone        int64   `protobuf:"varint,4,opt,name=long_zone,json=longZone,proto3" json:"long_zone,omitempty"`                       // Longitudinal zone.
+	LatZone         string  `protobuf:"bytes,5,opt,name=lat_zone,json=latZone,proto3" json:"lat_zone,omitempty"`                           // Latitude zone.
+	Hemisphere      string  `protobuf:"bytes,6,opt,name=hemisphere,proto3" json:"hemisphere,omitempty"`                                    // Hemisphere (N/S).
+	Srid            int64   `protobuf:"varint,7,opt,name=srid,proto3" json:"srid,omitempty"`                                               // Spatial Reference Identifier.
 }
 
 func (x *Device_Location_UTM) Reset() {

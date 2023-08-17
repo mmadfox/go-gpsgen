@@ -26,7 +26,7 @@ func main() {
 
 	droneTracker := gpsgen.NewDroneTracker()
 
-	route, err := gpsgen.GPXDecode([]byte(rawRoute))
+	route, err := gpsgen.DecodeGPXRoutes([]byte(rawRoute))
 	if err != nil {
 		panic(err)
 	}

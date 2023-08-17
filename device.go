@@ -735,9 +735,9 @@ func (d *Device) FromSnapshot(snap *pb.Snapshot) {
 			d.sensors[i] = sensor
 		}
 	}
+	d.updateSensors()
 	d.updateState()
 	d.updateRoutes()
-	d.updateSensors()
 }
 
 func (d *Device) mount() error {
