@@ -15,6 +15,7 @@ This library can be used in testing and debugging applications or devices depend
 [![Coverage Status](https://coveralls.io/repos/github/mmadfox/go-gpsgen/badge.svg?branch=main)](https://coveralls.io/github/mmadfox/go-gpsgen?branch=main)
 [![Docs](https://img.shields.io/badge/docs-current-brightgreen.svg)](https://pkg.go.dev/github.com/mmadfox/go-gpsgen)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mmadfox/go-gpsgen)](https://goreportcard.com/report/github.com/mmadfox/go-gpsgen)
+![Actions](https://github.com/mmadfox/go-gpsgen/actions/workflows/cover.yml/badge.svg)
 
 ## Table of Contents
 
@@ -26,6 +27,7 @@ This library can be used in testing and debugging applications or devices depend
   - [GPX](#gpx)
   - [Random](#random)
 - [Sensors](#sensors)
+- [Generated data](#generated-data)
 
 ### Installation
 
