@@ -22,9 +22,7 @@ var (
 	ErrSpeedMinGreaterMax = errors.New("types/speed: min value greater than max value")
 )
 
-// Speed represents a speed value with a
-// minimum and maximum range and contains value generator.
-// Basic unit of speed measurement is meters per second.
+// Speed represents a speed value with a minimum and maximum range and contains a value generator.
 type Speed struct {
 	min float64
 	max float64
@@ -55,41 +53,17 @@ func NewSpeed(min, max float64, amplitude int) (*Speed, error) {
 	if err := validateAmplitude(amplitude); err != nil {
 		return nil, err
 	}
-	gen, err := curve.RandomCurveWithMode(
+	gen := curve.New(
 		min,
 		max,
 		amplitude,
-		curve.ModeDefault|curve.ModeMinStart|curve.ModeMinEnd,
+		curve.ModeDefault,
 	)
-	if err != nil {
-		return nil, err
-	}
 	return &Speed{
 		min: min,
 		max: max,
 		gen: gen,
 	}, nil
-}
-
-// ToProto converts the Speed instance into a
-// proto representation (proto.TypeState) and returns a pointer to it.
-func (t *Speed) ToProto() *proto.TypeState {
-	return &proto.TypeState{
-		Min: t.min,
-		Max: t.max,
-		Val: t.val,
-		Gen: t.gen.ToProto(),
-	}
-}
-
-// FromProto sets the values of the Speed instance based
-// on the provided proto representation (proto.TypeState).
-func (t *Speed) FromProto(speed *proto.TypeState) {
-	t.gen = new(curve.Curve)
-	t.gen.FromProto(speed.Gen)
-	t.min = speed.Min
-	t.max = speed.Max
-	t.val = speed.Val
 }
 
 // Min returns the minimum speed value of the Speed instance.
@@ -104,6 +78,9 @@ func (t *Speed) Max() float64 {
 
 // Value returns the current speed value of the Speed instance.
 func (t *Speed) Value() float64 {
+	if t.isStatic() {
+		return t.min
+	}
 	return t.val
 }
 
@@ -112,11 +89,42 @@ func (t *Speed) String() string {
 	return fmt.Sprintf("speed: %.2f m/s", t.val)
 }
 
+// Shuffle shuffles the generator of the Speed instance.
+func (t *Speed) Shuffle() {
+	t.gen.Shuffle()
+}
+
 // Next generates the next speed value based on a given tick value,
 // using the underlying random curve generator.
 //
 // Tick in the range from 0 to 1.
 func (t *Speed) Next(tick float64) {
+	if t.isStatic() {
+		return
+	}
 	p := t.gen.Point(tick)
 	t.val = p.Y
+}
+
+// Snapshot returns a protobuf snapshot of the Speed instance.
+func (t *Speed) Snapshot() *proto.Snapshot_CommonType {
+	return &proto.Snapshot_CommonType{
+		Min: t.min,
+		Max: t.max,
+		Val: t.val,
+		Gen: t.gen.Snapshot(),
+	}
+}
+
+// FromSnapshot restores the Speed instance from a protobuf snapshot.
+func (t *Speed) FromSnapshot(snap *proto.Snapshot_CommonType) {
+	t.min = snap.Min
+	t.max = snap.Max
+	t.val = snap.Val
+	t.gen = new(curve.Curve)
+	t.gen.FromSnapshot(snap.Gen)
+}
+
+func (t *Speed) isStatic() bool {
+	return t.min == t.max
 }

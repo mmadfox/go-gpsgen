@@ -4,11 +4,10 @@ import (
 	"math"
 	"testing"
 
-	"github.com/mmadfox/go-gpsgen/proto"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewSpeed(t *testing.T) {
+func TestSpeed_New(t *testing.T) {
 	type args struct {
 		min       float64
 		max       float64
@@ -25,7 +24,7 @@ func TestNewSpeed(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "should return valid speed value when min, max == 0",
+			name: "should return valid speed value when min and max eq 0",
 			args: args{
 				min:       0,
 				max:       0,
@@ -45,6 +44,14 @@ func TestNewSpeed(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "should return when max > MaxSpeed",
+			args: args{
+				min: 0,
+				max: MaxSpeedVal + 1,
+			},
+			wantErr: true,
+		},
+		{
 			name: "should return error when min less than the minimum value",
 			args: args{
 				min: MinSpeedVal - 1,
@@ -53,7 +60,7 @@ func TestNewSpeed(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "should return error when amplitude less min value",
+			name: "should return error when amplitude less than min value",
 			args: args{
 				min:       0,
 				max:       100,
@@ -62,7 +69,7 @@ func TestNewSpeed(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "should return error when amplitude greater max value",
+			name: "should return error when amplitude greater than max value",
 			args: args{
 				min:       0,
 				max:       100,
@@ -91,6 +98,8 @@ func TestSpeed_Next(t *testing.T) {
 	speed, err := NewSpeed(1, 100, 32)
 	require.NoError(t, err)
 
+	speed.Shuffle()
+
 	var prev float64
 	for i := 0; i < 100; i++ {
 		speed.Next(float64(i) / 100)
@@ -103,42 +112,26 @@ func TestSpeed_Next(t *testing.T) {
 	}
 }
 
-func TestSpeedToProto(t *testing.T) {
-	speed, err := NewSpeed(1, 10, 20)
+func TestSpeed_Snapshot(t *testing.T) {
+	speed, err := NewSpeed(1, 3, 4)
 	require.NoError(t, err)
 	require.NotNil(t, speed)
-
-	protoSpeed := speed.ToProto()
-	require.NotNil(t, protoSpeed)
-	require.Equal(t, speed.Min(), protoSpeed.Min)
-	require.Equal(t, speed.Max(), protoSpeed.Max)
-	require.Equal(t, speed.Value(), protoSpeed.Val)
-	require.NotNil(t, protoSpeed.Gen)
+	snap := speed.Snapshot()
+	require.Equal(t, speed.Min(), snap.Min)
+	require.Equal(t, speed.Max(), snap.Max)
+	require.Equal(t, speed.Value(), snap.Val)
+	require.NotNil(t, snap.Gen)
 }
 
-func TestSpeedFromProto(t *testing.T) {
-	protoSpeed := &proto.TypeState{
-		Min: 2,
-		Max: 4,
-		Val: 3,
-		Gen: protoGenerator(),
-	}
-
-	speed := new(Speed)
-	speed.FromProto(protoSpeed)
-	require.Equal(t, protoSpeed.Min, speed.Min())
-	require.Equal(t, protoSpeed.Max, speed.Max())
-	require.Equal(t, protoSpeed.Val, speed.Value())
-}
-
-func protoGenerator() *proto.Curve {
-	return &proto.Curve{
-		Points: []*proto.Curve_ControlPoint{
-			{
-				Vp: &proto.Curve_Point{},
-				Cp: &proto.Curve_Point{},
-			},
-		},
-		Mode: 0,
-	}
+func TestSpeed_FromSnapshot(t *testing.T) {
+	speed, err := NewSpeed(1, 3, 4)
+	speed.Next(0.1)
+	require.NoError(t, err)
+	require.NotNil(t, speed)
+	snap := speed.Snapshot()
+	speed2 := new(Speed)
+	speed2.FromSnapshot(snap)
+	require.Equal(t, speed.Min(), speed2.Min())
+	require.Equal(t, speed.Max(), speed2.Max())
+	require.Equal(t, speed.Value(), speed2.Value())
 }

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx  xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="https://github.com/tkrajina/gpxgo">
+        <metadata>
+                <author>
+                        <name>go-gpsgen</name>
+                </author>
+        </metadata>
+        <trk>
+                <trkseg>
+                        <trkpt lat="29.5336285618" lon="106.4579227646"></trkpt>
+                        <trkpt lat="29.5293997918" lon="106.4579227646"></trkpt>
+                        <trkpt lat="29.5293997918" lon="106.4633480839"></trkpt>
+                        <trkpt lat="29.5336285618" lon="106.4633480839"></trkpt>
+                        <trkpt lat="29.5336285618" lon="106.4579227646"></trkpt>
+                </trkseg>
+                <trkseg>
+                        <trkpt lat="29.5336285618" lon="106.4657216611"></trkpt>
+                        <trkpt lat="29.5291047548" lon="106.4657216611"></trkpt>
+                        <trkpt lat="29.5291047548" lon="106.4714860629"></trkpt>
+                        <trkpt lat="29.5336285618" lon="106.4714860629"></trkpt>
+                        <trkpt lat="29.5336285618" lon="106.4657216611"></trkpt>
+                </trkseg>
+                <trkseg>
+                        <trkpt lat="29.5282337993" lon="106.4660959904"></trkpt>
+                        <trkpt lat="29.5266717342" lon="106.4718512872"></trkpt>
+                        <trkpt lat="29.5233178071" lon="106.4669144042"></trkpt>
+                </trkseg>
+        </trk>
+        <trk>
+                <trkseg>
+                        <trkpt lat="29.5282337993" lon="106.4660959904"></trkpt>
+                        <trkpt lat="29.5266717342" lon="106.4718512872"></trkpt>
+                        <trkpt lat="29.5233178071" lon="106.4669144042"></trkpt>
+                </trkseg>
+                <trkseg>
+                        <trkpt lat="29.5336285618" lon="106.4657216611"></trkpt>
+                        <trkpt lat="29.5291047548" lon="106.4657216611"></trkpt>
+                        <trkpt lat="29.5291047548" lon="106.4714860629"></trkpt>
+                        <trkpt lat="29.5336285618" lon="106.4714860629"></trkpt>
+                        <trkpt lat="29.5336285618" lon="106.4657216611"></trkpt>
+                </trkseg>
+        </trk>
+        <extensions>
+                <gpsgen>
+                        <route name="some" id="df1d84dc-2516-4384-b477-a271c9b3fadb" color="#b730a1" distance="5300.990639691627" units="meters" foo="1" baz="true" ing="123" val="val">
+                                <track color="#c51520" distance="1990.2240332037318">03a902c3-43a4-4f73-9bbe-b82a344e2ddc</track>
+                                <track color="#e5a43f" distance="2121.450689846222">e2264223-21a2-473a-943c-7dcd7fc29537</track>
+                                <track color="#8011e5" distance="1189.315916641673">7f5451e3-46c8-40ca-8bf4-b10ed4e39819</track>
+                        </route>
+                        <route name="some" id="b979991c-3c75-4636-9aa7-02cadac3a09d" color="#1837d4" distance="3310.766606487895" units="meters">
+                                <track color="#8011e5" distance="1189.315916641673">7f5451e3-46c8-40ca-8bf4-b10ed4e39819</track>
+                                <track color="#e5a43f" distance="2121.450689846222">e2264223-21a2-473a-943c-7dcd7fc29537</track>
+                        </route>
+                </gpsgen>
+        </extensions>
+</gpx>

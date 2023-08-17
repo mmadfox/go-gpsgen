@@ -8,248 +8,232 @@
 Language: [En](./README.md)
 
 Генератор GPS данных на основе заданных маршрутов.
+Поддерживаются маршруты GPX, GeoJSON формата.
 
-Библиотека может использоваться в тестировании и отладке приложений или устройств, зависящих от GPS, позволяя создавать симулированные местоположения для проверки их функциональности без необходимости фактического перемещения.
+Библиотека может использоваться в тестировании и отладке приложений или устройств, зависящих от GPS/GLONASS/ETC, позволяя создавать симулированные местоположения для проверки их функциональности без необходимости фактического перемещения.
 
 ## Оглавление
-+ [Примеры](#примеры)
-+ [Установка](#установка)
-+ [Генерируемые данные](#генерируемые-данные)
-+ [Ограничения и базовые единицы](#ограничения-и-базовые-единицы)
-+ [Настройки](#настройки)
-+ [Маршруты](#маршруты)
+
+- [Установка](#установка)
+- [Пример](#пример)
+- [Генерируемые данные](#генерируемые-данные)
+- Маршруты
   - [GeoJSON](#geojson)
   - [GPX](#gpx)
-  - [Рандомные](#рандомный)
-  - [Статичные](#cтатичный)
-  - [Стандартный](#стандартный)
-+ [Пресеты устройств](#пресеты-устройств)  
-+ [Настройка amplitude](#пример-amplitude-option)
+  - [Random](#random)
+- [Сенсоры](#сенсоры)
 
-
-### Примеры
-[Examples](./examples/)
-
-```go
-package main
-
-import (
-	"github.com/mmadfox/go-gpsgen"
-	"github.com/mmadfox/go-gpsgen/draw"
-	"github.com/mmadfox/go-gpsgen/proto"
-)
-
-func main() {
-	conf := gpsgen.NewConfig()
-
-	myDevice, err := conf.NewDevice()
-	if err != nil {
-		panic(err)
-	}
-	myDevice.OnStateChange = func(state *proto.Device) {
-		draw.Table(state)
-	}
-
-	gen := gpsgen.New()
-	gen.Attach(myDevice)
-	gen.Run()
-	defer gen.Close()
-
-	select {}
-}
-```
 ### Установка
+
 ```shell
 $ go get github.com/mmadfox/go-gpsgen
 ```
 
-### Генерируемые данные
-```shell
-+---------------------------+--------------------------------+--------------------------------+--------------------------------+
-|          DEVICE           |            LOCATION            |            SENSORS             |         CUSTOM SENSORS         |
-+---------------------------+--------------------------------+--------------------------------+--------------------------------+
-| Model:myModel             | Lon:37.510332 Lat:55.806487    | Speed:1.40m/s                  | s1:valX=0.009623 valY=5.189231 |
-| Status:Online             | Elevation:1.871725m            | BatteryCharge:99.92%           | s2:valX=0.174587 valY=5.228231 |
-| RouteIndex:0              | Bearing:118.180068             | ChargeTime:4h0m0s              |                                |
-| TrackIndex:0              | DMSLat:55°48'23.353184"N       | Duration:11s                   |                                |
-| SegmentIndex:0            | DMSLon:37°30'37.196757"E       | TotalDist:32006.99m.           |                                |
-| Descr:some description    | UTMEasting:406632.8626         | CurDist:13.45m.                |                                |
-| Properties:               | UTMNorthing:6185546.4974       | CurSegDist:13.45m.             |                                |
-| foo=foo,bar=bar,          | UTMZone:37U                    | SegDist:1521.11m.              |                                |
-|                           |                                | Tick:1.00s                     |                                |
-+---------------------------+--------------------------------+--------------------------------+--------------------------------+
-```
+### Пример
 
-### Ограничения и базовые единицы
-| Option        | Constraint                          | Unit             |
-|---------------|-------------------------------------|------------------|
-| WithSpeed     | min=0, max=1000, amplitude=4..512   | meter per second |
-| WithBattery   | min=0, max=100, chargeTime          | percent          |
-| WithModel     | min=1, max=64                       |                  |
-| WithElevation | min=0, max=10000, amplitude=4..512  | meters           |
-| WithOffline   | min=0, max=300                      | seconds          |
-| WithSensors   | min=0, max=15, amplitude=4..512     | any              |
-#### Ограничения для устройства
-```json
-{"model":{"min":1,"max":64},"properties":{"min":0,"max":16,"maxValueLen":64,"minKeyLen":32},"description":{"min":3,"max":256},"speed":{"max":1000,"min":0,"amplitudeMin":4,"amplitudeMax":512},"battery":{"max":100,"min":0},"elevation":{"max":10000,"min":0,"amplitudeMin":4,"amplitudeMax":512},"offline":{"min":0,"max":900},"sensors":{"min":0,"max":15},"routes":{"min":1,"max":10,"minTracksPerRoute":1,"maxTracksPerRoute":128,"minSegmentsPerTrack":1,"maxSegmentsPerTrack":1000,"minDistance":1000,"maxDistance":2000000}}
-```
-
-### Настройки
-| Option                | Description                                                                                     |
-|-----------------------|-------------------------------------------------------------------------------------------------|
-| WithModel             | Название модели устройства (TxNo12-Oi7)                                                         |
-| WithUserID            | Данные пользователя (ID, Number, etc)                                                           |
-| WithRoutes, WithRoute | Маршрут для генератора                                                                          |
-| WithSpeed             | Диапазон скорости min..max в метрах в секунду                                                   |
-| WithBattery           | Диапазон заряда аккумулятора 0..100 в процентах                                                 |
-| WithSensors           | Дополнительные датчики, которые можно добавить к устройству. Sensor{name, min, max, amplitude}  |
-| WithElevation         | Диапазон высоты min..max в метрах                                                               |
-| WithOffline           | Между переключением треков или маршрутов устройство будет уходить в offline min..max в секундах |
-| WithProps             | Характеристики устройства map[string]string                                                     |
-| WithDescritpion       | Короткое описание устройства                                                                    |
-
-### Маршруты
-Маршрут для GPS генератора - это заданный путь или последовательность точек на карте, которые определяют планируемое или фиксированное перемещение геотрекера. 
-#### GeoJSON
 ```go
 package main
 
 import (
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/google/uuid"
 	"github.com/mmadfox/go-gpsgen"
-	"github.com/mmadfox/go-gpsgen/geojson"
+)
+
+const (
+	numTracksPerRoute = 3
+	numTrackers       = 1000
+	flushInterval     = 3 * time.Second
 )
 
 func main() {
-	geoJSONRoute := `{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"coordinates":[[37.73185507353088,55.59010742814678],[37.740460827380986,55.585012323942266]],"type":"LineString"}}]}`
-	routes, err := geojson.Decode([]byte(geoJSONRoute))
-	if err != nil {
-		panic(err)
-	}
-	myTracker, err := gpsgen.Tracker("Tracker78-1", nil, routes...)
-	if err != nil {
-		panic(err)
-	}
-	_ = myTracker
-}
-```
-#### GPX
-```go 
-package main
+	lon := 37.625616307117696
+	lat := 55.75350460378772
 
-import "github.com/mmadfox/go-gpsgen/gpx"
+	genOpts := gpsgen.NewOptions()
+	genOpts.Interval = flushInterval
+	gen := gpsgen.New(genOpts)
 
-func main() {
-	gpxRoute := `<?xml version="1.0" encoding="UTF-8"?><gpx xmlns="http://www.topografix.com/GPX/1/1"
-   version="1.1"
-   creator="Wikipedia" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd"><time>2011-09-22T18:56:51Z</time><metadata><name>Name</name><desc>Description</desc><author><name>Autor</name></author></metadata><rte><rtept lat="55.74966429698134" lon="37.624339525581576"/><rtept lat="55.748482140161286" lon="37.62444198526788"/></rte></gpx>`
-
-	routes, err := gpx.Decode([]byte(gpxRoute))
-	if err != nil {
-		panic(err)
-	}
-	_ = routes
-}
-```
-#### Рандомный
-Поддерживаются страны: ```Angola, SouthArabia, Turkey, Russia, France, Spain, China```
-```go 
-package main
-
-import "github.com/mmadfox/go-gpsgen/route"
-
-func main() {
-	myRoute, err := route.Generate()
-	if err != nil {
-		panic(err)
-	}
-	_ = myRoute
-
-    // by specified country 
-	myRoute1, err := route.GenerateFor(route.Russia)
-	if err != nil {
-		panic(err)
-	}
-	_ = myRouteR1
-}
-```
-#### Cтатичный
-Поддерживаются страны: ```Russia1..5, France1..5, Spain1..5, China1..5``` 
-```go
-package main
-
-import "github.com/mmadfox/go-gpsgen/route"
-
-func main() {
-	_, _ = route.China1()
-	_, _ = route.China2()
-	_, _ = route.China3()
-	_, _ = route.China4()
-	_, _ = route.China5()
-
-	_, _ = route.France1()
-	_, _ = route.France2()
-	_, _ = route.France3()
-	_, _ = route.France4()
-	_, _ = route.France5()
-
-	_, _ = route.Spain1()
-	_, _ = route.Spain2()
-	_, _ = route.Spain3()
-	_, _ = route.Spain4()
-	_, _ = route.Spain5()
-
-	_, _ = route.Russia1()
-	_, _ = route.Russia2()
-	_, _ = route.Russia3()
-	_, _ = route.Russia4()
-	_, _ = route.Russia5()
-}
-```
-#### Стандартный
-```go
-package main
-
-import "github.com/mmadfox/go-gpsgen/navigator"
-
-func main() {
-	r1, err := navigator.NewRoute([][]navigator.Point{
-		{ // Track-1
-			{X: 55.748482140161286, Y: 37.62444198526788}, // X - lat, Y - lon
-			{X: 55.74863130542925, Y: 37.62442905718493},  // X - lat, Y - lon
-            // ...
-		},
-        { // Track-2
-            // ...
-        }
+	// Для передечи пакета по сети
+	gen.OnPacket(func(b []byte) {
+		// udp.send(b)
 	})
-	if err != nil {
-		panic(err)
+
+	gen.OnError(func(err error) {
+		fmt.Println("[ERROR]", err)
+	})
+
+	gen.OnNext(func() {
+		fmt.Println("tracker state changed successfully")
+	})
+
+    // Генерируем рандомные маршруты
+	for i := 0; i < numTrackers; i++ {
+		tracker := gpsgen.NewTracker()
+		tracker.SetUserID(uuid.NewString())
+		route := gpsgen.RandomRoute(lon, lat, numTracksPerRoute, gpsgen.RouteLevelM)
+		tracker.AddRoute(route)
+		gen.Attach(tracker)
 	}
-	_ = r1
+
+	terminate(func() {
+		gen.Close()
+	})
+
+	gen.Run()
+}
+
+func terminate(fn func()) {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+	go func() {
+		<-sigChan
+		fn()
+	}()
 }
 ```
-### Пресеты устройств
-```go 
-// Drone 
-gpsgen.Drone(model string, props gpsgen.Properties, route ...*navigator.Route) (*gpsgen.Device, error)
-gpsgen.DroneWithSensors( model string, routes []*navigator.Route, props gpsgen.Properties, sensors ...gpsgen.Sensor) (*gpsgen.Device, error)
 
-// Tracker
-gpsgen.Tracker( model string, props gpsgen.Properties, route ...*navigator.Route) (*gpsgen.Device, error)
-gpsgen.TrackerWithSensors( model string, routes []*navigator.Route, props gpsgen.Properties, sensors ...gpsgen.Sensor) (*gpsgen.Device, error)
-``` 
-### Пример amplitude option
-Все датчики формируют данные от минимального до максимального значения по кривой Безье с учетом контрольных точек, которые указаны в параметре амплитуды.
-Амплитуда – это количество контрольных точек на кривой Безье от 4 до 512.
+### Маршруты
 
-На рисунках представлены рандомные значения от 0 до 120 и контрольные точки 4,8,16,32,64,128,256,512
+#### GeoJSON
 
-<img src="./.github/amplitudes/4.png" alt="GPS data generator" height="150px">
-<img src="./.github/amplitudes/8.png" alt="GPS data generator" height="150px">
-<img src="./.github/amplitudes/16.png" alt="GPS data generator" height="150px">
-<img src="./.github/amplitudes/32.png" alt="GPS data generator" height="150px">
-<img src="./.github/amplitudes/64.png" alt="GPS data generator" height="150px">
-<img src="./.github/amplitudes/128.png" alt="GPS data generator" height="150px">
-<img src="./.github/amplitudes/256.png" alt="GPS data generator" height="150px">
-<img src="./.github/amplitudes/512.png" alt="GPS data generator" height="150px">
+```go
+tracker := gpsgen.NewDroneTracker()
+
+route, err := gpsgen.GeoJSONDecode(geoJSONBytes)
+if err != nil {
+	panic(err)
+}
+
+tracker.AddRoute(route...)
+// ...
+```
+
+#### GPX
+
+```go
+tracker := gpsgen.NewDroneTracker()
+
+route, err := gpsgen.GPXDecode(GPXBytes)
+if err != nil {
+	panic(err)
+}
+
+tracker.AddRoute(route...)
+// ...
+```
+
+#### Random
+
+```go
+tracker := gpsgen.NewDroneTracker()
+
+// lon, lat, numTracks, zoomLevel
+lon := 28.31261399982
+lat := 53.247483804819666
+numTracks := 2
+
+route := gpsgen.RandomRoute(lon, lat, numTracks, gpsgen.RouteLevelXL)
+
+tracker.AddRoute(route...)
+// ...
+```
+
+### Сенсоры
+
+Сенсор обеспечивает гибкий и расширяемый способ представления датчиков и работы с ними.
+Он позволяет генерировать разные значения для разных задач, что делает его подходящим
+для различных приложений и вариантов использования, включающих сбор данных датчиков, моделирование или анализ.
+
+```go
+// types.WithStart: Генерация начинается с минимального значения от 1 до 10
+// types.WithEnd:   Генерация заканчивается минимальным значением от 10 до 1
+// types.WithRandom: Генерация данных по кривой безье 1 - 10
+
+minValue := 1
+maxValue := 10
+amplitude := 16 // 4 - 512
+
+droneTracker.AddSensor("s1", minValue, maxValue, amplitude, types.WithStart|types.WithRandom|types.WithEnd)
+droneTracker.AddSensor("s2", 10, 20, 16, types.WithRandom|types.WithEnd)
+droneTracker.AddSensor("s3", 20, 30, 16, 0)
+```
+
+### Генерируемые данные
+
+```text
+Device:
+    id
+    user_id
+    tick
+    duration
+    model
+    speed
+    distance
+    battery (charge, charge_time)
+    routes (routes)
+    location (lat, lon, elevation, bearing, lat_dms, lon_dms, utm)
+    navigator (current_route_index, current_track_index, current_segment_index)
+    sensors (id, name, val_x, val_y)
+    description
+    is_offline
+    offline_duration
+    color
+    time_estimate
+Device.Battery:
+    charge
+    charge_time
+Device.Routes:
+    routes (Route)
+Device.Routes.Route:
+    id
+    tracks (Track)
+    distance
+    color
+    props
+    props_count
+Device.Routes.Route.Track:
+    distance
+    num_segments
+    color
+    props
+    props_count
+Device.Sensor:
+    id
+    name
+    val_x
+    val_y
+Device.Navigator:
+    current_route_index
+    current_track_index
+    current_segment_index
+Device.Distance:
+    distance
+    current_distance
+    route_distance
+    current_route_distance
+    track_distance
+    current_track_distance
+    segment_distance
+    current_segment_distance
+Device.Location:
+    lat
+    lon
+    elevation
+    bearing
+    lat_dms (degrees, minutes, seconds, direction)
+    lon_dms (degrees, minutes, seconds, direction)
+    utm (central_meridian, easting, northing, long_zone, lat_zone, hemisphere, srid)
+Packet:
+    devices (Device)
+    timestamp
+```

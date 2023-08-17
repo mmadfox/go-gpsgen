@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx  xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="https://github.com/tkrajina/gpxgo">
+        <metadata>
+                <author>
+                        <name>go-gpsgen</name>
+                </author>
+        </metadata>
+        <trk>
+                
+        </trk>
+        <trk>
+                
+        </trk>
+        <extensions>
+                <gpsgen>
+                        <route id="df1d84dc-2516-4384-b477-a271c9b3fadb" color="#b730a1" distance="5300.990639691627" units="meters" foo="1" baz="true" ing="123" val="val">
+       
+                        </route>
+                        <route id="b979991c-3c75-4636-9aa7-02cadac3a09d" color="#1837d4" distance="3310.766606487895" units="meters">
+
+                        </route>
+                </gpsgen>
+        </extensions>
+</gpx>

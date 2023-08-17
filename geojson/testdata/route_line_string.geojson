@@ -1,0 +1,46 @@
+{
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              106.46609599041324,
+              29.528233799305895
+            ],
+            [
+              106.47185128721964,
+              29.526671734226028
+            ],
+            [
+              106.46691440417999,
+              29.523317807121842
+            ]
+          ]
+        },
+        "properties": {
+          "color": "#2dd049",
+          "distance": 1189.315916641673,
+          "foo": "bar",
+          "isActive": true,
+          "numTracks": 1,
+          "routeID": "9c41a8f1-49e2-46c5-a978-898d40ffada1",
+          "speed": 1.2,
+          "tracksInfo": [
+            {
+              "trackID": "1acad315-6618-4edd-8619-d72a64308564",
+              "color": "#5935dd",
+              "distance": 1189.315916641673,
+              "numSegments": 2,
+              "properties": {
+                "foo": "bar"
+              }
+            }
+          ],
+          "units": "meters"
+        }
+      }
+    ],
+    "type": "FeatureCollection"
+  }

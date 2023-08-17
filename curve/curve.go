@@ -1,16 +1,13 @@
 package curve
 
 import (
-	"errors"
 	"math/rand"
+	"time"
 
 	"github.com/mmadfox/go-gpsgen/proto"
 )
 
-var (
-	ErrNoControlPoints = errors.New("curves: no control points")
-)
-
+// CurveMode represents different curve modes.
 type CurveMode uint16
 
 const (
@@ -19,6 +16,9 @@ const (
 	ModeMinEnd
 )
 
+var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+// Point represents a point in 2D space.
 type Point struct {
 	X, Y float64
 }
@@ -28,72 +28,58 @@ type point struct {
 	cp Point
 }
 
+// Curve represents a curve with control points and related operations.
 type Curve struct {
-	points []point
-	mode   int
+	points   []point
+	mode     int
+	min, max float64
 }
 
-func New(cp []Point) (*Curve, error) {
-	if len(cp) == 0 {
-		return nil, ErrNoControlPoints
-	}
-	curve := Curve{
-		points: make([]point, len(cp)),
-		mode:   ModeDefault,
-	}
-	for i, p := range cp {
-		curve.points[i].vp = p
+// Min returns the minimum value of the curve.
+func (c *Curve) Min() float64 {
+	return c.min
+}
+
+// Max returns the maximum value of the curve.
+func (c *Curve) Max() float64 {
+	return c.max
+}
+
+// NumControlPoints returns the number of control points in the curve.
+func (c *Curve) NumControlPoints() int {
+	return len(c.points)
+}
+
+// Shuffle randomly shuffles the control points of the curve.s
+func (c *Curve) Shuffle() {
+	for i := 0; i < len(c.points); i++ {
+		var y float64
+		if c.mode&ModeMinStart != 0 && i == 0 {
+			y = float64(c.min)
+		} else if c.mode&ModeMinEnd != 0 && i == len(c.points)-1 {
+			y = float64(c.min)
+		} else {
+			y = randomFloat(c.min, c.max)
+		}
+		c.points[i] = point{vp: Point{X: float64(i), Y: y}}
 	}
 
 	var w float64
-	for i, p := range curve.points {
+	for i, p := range c.points {
 		switch i {
 		case 0:
 			w = 1
 		case 1:
-			w = float64(len(curve.points)) - 1
+			w = float64(len(c.points)) - 1
 		default:
-			w *= float64(len(curve.points)-i) / float64(i)
+			w *= float64(len(c.points)-i) / float64(i)
 		}
-		curve.points[i].cp.X = p.vp.X * w
-		curve.points[i].cp.Y = p.vp.Y * w
+		c.points[i].cp.X = p.vp.X * w
+		c.points[i].cp.Y = p.vp.Y * w
 	}
-
-	return &curve, nil
 }
 
-func (c *Curve) ToProto() *proto.Curve {
-	pbcurve := &proto.Curve{
-		Points: make([]*proto.Curve_ControlPoint, len(c.points)),
-		Mode:   int64(c.mode),
-	}
-	for i := 0; i < len(c.points); i++ {
-		pbcurve.Points[i] = &proto.Curve_ControlPoint{
-			Vp: &proto.Curve_Point{X: c.points[i].vp.X, Y: c.points[i].vp.Y},
-			Cp: &proto.Curve_Point{X: c.points[i].cp.X, Y: c.points[i].cp.Y},
-		}
-	}
-	return pbcurve
-}
-
-func (c *Curve) FromProto(pb *proto.Curve) {
-	c.points = make([]point, len(pb.Points))
-	for i := 0; i < len(pb.Points); i++ {
-		pt := pb.Points[i]
-		c.points[i] = point{
-			vp: Point{
-				X: pt.Vp.X,
-				Y: pt.Vp.Y,
-			},
-			cp: Point{
-				X: pt.Cp.X,
-				Y: pt.Cp.Y,
-			},
-		}
-	}
-	c.mode = int(pb.Mode)
-}
-
+// Point returns a point on the curve for a given parameter t.
 func (c *Curve) Point(t float64) Point {
 	c.points[0].vp = c.points[0].cp
 	u := t
@@ -119,23 +105,62 @@ func (c *Curve) Point(t float64) Point {
 	return p
 }
 
-const numControlPoint = 16
+// Snapshot generates a snapshot of the curve's state.
+func (c *Curve) Snapshot() *proto.Snapshot_Curve {
+	points := make([]*proto.Snapshot_Curve_ControlPoint, len(c.points))
+	for i := 0; i < len(c.points); i++ {
+		point := c.points[i]
+		points[i] = &proto.Snapshot_Curve_ControlPoint{
+			Vp: &proto.Snapshot_Curve_Point{
+				X: point.vp.X,
+				Y: point.vp.Y,
+			},
+			Cp: &proto.Snapshot_Curve_Point{
+				X: point.cp.X,
+				Y: point.cp.Y,
+			},
+		}
+	}
+	return &proto.Snapshot_Curve{
+		Mode:   int64(c.mode),
+		Min:    c.min,
+		Max:    c.max,
+		Points: points,
+	}
+}
 
-func RandomCurveWithMode(min, max float64, pn int, m CurveMode) (*Curve, error) {
-	if pn <= 0 {
-		pn = numControlPoint
+// FromSnapshot restores the curve's state from a snapshot.
+func (c *Curve) FromSnapshot(snap *proto.Snapshot_Curve) {
+	c.mode = int(snap.Mode)
+	c.min = snap.Min
+	c.max = snap.Max
+	c.points = make([]point, len(snap.Points))
+	for i := 0; i < len(snap.Points); i++ {
+		c.points[i] = point{
+			vp: Point{X: snap.Points[i].Vp.X, Y: snap.Points[i].Vp.Y},
+			cp: Point{X: snap.Points[i].Cp.X, Y: snap.Points[i].Cp.Y},
+		}
+	}
+}
+
+const defaultControlPoint = 4
+
+// New creates a new Curve with specified parameters.
+func New(min, max float64, controlPoints int, m CurveMode) *Curve {
+	if controlPoints <= 0 {
+		controlPoints = defaultControlPoint
 	}
 
 	curv := Curve{
-		points: make([]point, pn),
+		points: make([]point, controlPoints),
 		mode:   int(m),
 	}
 
-	for i := 0; i < pn; i++ {
+	for i := 0; i < controlPoints; i++ {
 		var y float64
 		if m&ModeMinStart != 0 && i == 0 {
 			y = float64(min)
-		} else if m&ModeMinEnd != 0 && i == pn-1 {
+		} else if m&ModeMinEnd != 0 && i == controlPoints-1 {
 			y = float64(min)
 		} else {
 			y = randomFloat(min, max)
@@ -157,9 +182,12 @@ func RandomCurveWithMode(min, max float64, pn int, m CurveMode) (*Curve, error) 
 		curv.points[i].cp.Y = p.vp.Y * w
 	}
 
-	return &curv, nil
+	curv.min = min
+	curv.max = max
+
+	return &curv
 }
 
 func randomFloat(min, max float64) float64 {
-	return min + rand.Float64()*(max-min)
+	return min + rnd.Float64()*(max-min)
 }

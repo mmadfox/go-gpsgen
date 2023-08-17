@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/mmadfox/go-gpsgen/curve"
 	"github.com/mmadfox/go-gpsgen/proto"
 )
@@ -15,6 +16,7 @@ var ErrEmptySensorName = errors.New("types/sensor: empty name")
 // It allows for generating different values for different tasks, making it suitable
 // for various applications and use cases involving sensor data collection, simulation, or analysis.
 type Sensor struct {
+	id   string
 	name string
 	min  float64
 	max  float64
@@ -23,28 +25,40 @@ type Sensor struct {
 	gen  *curve.Curve
 }
 
+type (
+	SensorSnapshot = proto.Snapshot_SensorType
+	SensorMode     = curve.CurveMode
+)
+
+const (
+	WithRandom = curve.ModeDefault
+	WithStart  = curve.ModeMinStart
+	WithEnd    = curve.ModeMinEnd
+)
+
 // NewSensor creates a new Sensor instance with the given name,
 // minimum and maximum values, and amplitude.
 // The amplitude is used to generate a random curve for the sensor.
 //
 // Valid amplitude values from 4 to 512.
-func NewSensor(name string, min, max float64, amplitude int) (*Sensor, error) {
+func NewSensor(name string, min, max float64, amplitude int, mode SensorMode) (*Sensor, error) {
 	if err := validateAmplitude(amplitude); err != nil {
 		return nil, err
 	}
 	if len(name) == 0 {
 		return nil, ErrEmptySensorName
 	}
-	gen, err := curve.RandomCurveWithMode(
+	if mode == 0 {
+		mode = curve.ModeDefault
+	}
+	gen := curve.New(
 		min,
 		max,
 		amplitude,
-		curve.ModeDefault,
+		mode,
 	)
-	if err != nil {
-		return nil, err
-	}
 	return &Sensor{
+		id:   uuid.NewString(),
 		name: name,
 		min:  min,
 		max:  max,
@@ -52,29 +66,9 @@ func NewSensor(name string, min, max float64, amplitude int) (*Sensor, error) {
 	}, nil
 }
 
-// ToProto converts the sensor object to its corresponding
-// protobuf message representation.
-func (t *Sensor) ToProto() *proto.SensorState {
-	return &proto.SensorState{
-		Min:  t.min,
-		Max:  t.max,
-		ValX: t.valX,
-		ValY: t.valY,
-		Name: t.name,
-		Gen:  t.gen.ToProto(),
-	}
-}
-
-// FromProto sets the fields of the sensor object based on the values
-// from the provided protobuf message.
-func (t *Sensor) FromProto(sensor *proto.SensorState) {
-	t.gen = new(curve.Curve)
-	t.gen.FromProto(sensor.Gen)
-	t.min = sensor.Min
-	t.max = sensor.Max
-	t.valX = sensor.ValX
-	t.valY = sensor.ValY
-	t.name = sensor.Name
+// ID returns the unique identifier of the sensor.
+func (t *Sensor) ID() string {
+	return t.id
 }
 
 // Name returns the name of the sensor.
@@ -107,6 +101,10 @@ func (t *Sensor) String() string {
 	return fmt.Sprintf("%s: valX=%.8f, valY=%.8f", t.name, t.valX, t.valY)
 }
 
+func (t *Sensor) Shuffle() {
+	t.gen.Shuffle()
+}
+
 // Next updates the sensor's values based on the tick value,
 // generating new values using the associated generator object.
 //
@@ -115,4 +113,29 @@ func (t *Sensor) Next(tick float64) {
 	p := t.gen.Point(tick)
 	t.valX = p.X
 	t.valY = p.Y
+}
+
+// Snapshot returns a protobuf snapshot of the Sensor instance.
+func (t *Sensor) Snapshot() *SensorSnapshot {
+	return &SensorSnapshot{
+		Id:   t.id,
+		Name: t.name,
+		Min:  t.min,
+		Max:  t.max,
+		ValX: t.valX,
+		ValY: t.valY,
+		Gen:  t.gen.Snapshot(),
+	}
+}
+
+// FromSnapshot restores the Sensor instance from a protobuf snapshot.
+func (t *Sensor) FromSnapshot(snap *SensorSnapshot) {
+	t.id = snap.Id
+	t.name = snap.Name
+	t.min = snap.Min
+	t.max = snap.Max
+	t.valX = snap.ValX
+	t.valY = snap.ValY
+	t.gen = new(curve.Curve)
+	t.gen.FromSnapshot(snap.Gen)
 }

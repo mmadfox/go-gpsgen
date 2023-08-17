@@ -1,219 +1,251 @@
 package navigator
 
 import (
-	"errors"
+	"encoding/json"
+	"fmt"
 
-	pb "github.com/mmadfox/go-gpsgen/proto"
-	"google.golang.org/protobuf/proto"
+	"github.com/google/uuid"
+	"github.com/lucasb-eyer/go-colorful"
+	"github.com/mmadfox/go-gpsgen/properties"
+	"github.com/mmadfox/go-gpsgen/proto"
 )
 
-var (
-	ErrNoPoints         = errors.New("no route points")
-	ErrInvalidRoutePath = errors.New("invalid route path")
-)
-
-type Point struct {
-	X float64 // Lat
-	Y float64 // Lon
-}
-
+// Route represents a route containing tracks and associated properties.
 type Route struct {
-	dist   float64
-	tracks [][]*Segment
+	id      string
+	dist    float64
+	color   string
+	name    Name
+	tracks  []*Track
+	props   properties.Properties
+	version int
 }
 
-func NewRoute(points [][]Point) (*Route, error) {
-	if len(points) == 0 {
-		return nil, ErrNoPoints
-	}
+// RouteSnapshot is a serialized snapshot of a Route.
+type RouteSnapshot = proto.Snapshot_Navigator_Route
 
-	newRoute := Route{
-		tracks: make([][]*Segment, 0, len(points)),
+// NewRoute creates a new Route instance with default values.
+func NewRoute() *Route {
+	return &Route{
+		id:     uuid.NewString(),
+		color:  colorful.FastHappyColor().Hex(),
+		tracks: make([]*Track, 0),
 	}
-
-	for i := 0; i < len(points); i++ {
-		if err := newRoute.AddTrack(points[i]); err != nil {
-			return nil, err
-		}
-	}
-
-	return &newRoute, nil
 }
 
-func (r *Route) TotalDistance() float64 {
-	return r.dist
+// RestoreRoute restores a Route instance with the given parameters.
+func RestoreRoute(
+	routeID string,
+	color string,
+	props properties.Properties,
+) *Route {
+	return &Route{
+		id:     routeID,
+		color:  color,
+		props:  props,
+		tracks: make([]*Track, 0),
+	}
 }
 
-func (r *Route) IsPolygon(track int) bool {
-	if track > len(r.tracks) {
-		return false
+// RouteFromTracks creates a new Route instance from a list of tracks.
+func RouteFromTracks(tracks ...*Track) *Route {
+	newRoute := NewRoute()
+	for i := 0; i < len(tracks); i++ {
+		newRoute.AddTrack(tracks[i])
 	}
-	return r.tracks[track][0].pointA == r.tracks[track][len(r.tracks[track])-1].pointB
+	return newRoute
 }
 
-func (r *Route) AddTrack(points []Point) error {
-	if len(points) < 2 {
-		return ErrInvalidRoutePath
-	}
+// ID returns the ID of the route.
+func (r *Route) ID() string {
+	return r.id
+}
 
-	numSeg := len(points) - 1
-	segments := make([]*Segment, 0, numSeg)
-	for j := 0; j < numSeg; j++ {
-		newSeg := &Segment{
-			pointA: points[j],
-			pointB: points[j+1],
-			rel:    -1,
-		}
-		newSeg.bearing = BearingTo(
-			newSeg.pointA.X,
-			newSeg.pointA.Y,
-			newSeg.pointB.X,
-			newSeg.pointB.Y)
-		newSeg.dist = DistanceTo(
-			newSeg.pointA.X,
-			newSeg.pointA.Y,
-			newSeg.pointB.X,
-			newSeg.pointB.Y)
-		segments = append(segments, newSeg)
-		r.dist += newSeg.dist
-	}
+// Color returns the color of the route.
+func (r *Route) Color() string {
+	return r.color
+}
 
-	for s := 0; s < len(segments); s++ {
-		if s == 0 {
-			continue
-		}
-		if segments[s-1].pointB == segments[s].pointA {
-			segments[s-1].rel = s - 1
-			segments[s].rel = s
-		}
+// ChangeColor changes the color of the route.
+func (r *Route) ChangeColor(color colorful.Color) error {
+	if !color.IsValid() {
+		return fmt.Errorf("invalid route color %s", color.Hex())
 	}
-
-	r.tracks = append(r.tracks, segments)
+	r.color = color.Hex()
+	r.nextVersion()
 	return nil
 }
 
+// Distance returns the total distance of the route.
 func (r *Route) Distance() float64 {
 	return r.dist
 }
 
+// Name returns the name of the route.
+func (r *Route) Name() Name {
+	return r.name
+}
+
+// ChangeName changes the name of the route.
+func (r *Route) ChangeName(name string) error {
+	n, err := ParseName(name)
+	if err != nil {
+		return err
+	}
+	r.name = n
+	r.nextVersion()
+	return nil
+}
+
+// Props returns the properties associated with the route.
+func (r *Route) Props() properties.Properties {
+	if r.props == nil {
+		r.props = properties.Make()
+	}
+	return r.props
+}
+
+// NumTracks returns the number of tracks in the route.
 func (r *Route) NumTracks() int {
 	return len(r.tracks)
 }
 
-func (r *Route) NumSegments(trackIndex int) int {
-	if trackIndex > len(r.tracks) {
-		return -1
+// TrackAt returns the track at the specified index.
+func (r *Route) TrackAt(i int) *Track {
+	if len(r.tracks) == 0 || i > len(r.tracks)-1 || i < 0 {
+		return nil
 	}
-	return len(r.tracks[trackIndex])
+	return r.tracks[i]
 }
 
-func (r *Route) SegmentAt(track int, segment int) *Segment {
-	return r.tracks[track][segment]
-}
-
-func (r *Route) EachSegment(track int, fn func(seg *Segment)) {
-	if track > len(r.tracks) {
+// RemoveTrack removes a track from the route.
+func (r *Route) RemoveTrack(trackID string) (ok bool) {
+	if len(trackID) == 0 || len(trackID) > 36 {
 		return
 	}
-	for j := 0; j < len(r.tracks[track]); j++ {
-		fn(r.tracks[track][j])
+	for i := 0; i < len(r.tracks); i++ {
+		track := r.tracks[i]
+		if track.ID() == trackID {
+			r.tracks = append(r.tracks[:i], r.tracks[i+1:]...)
+			ok = true
+			track = nil
+			break
+		}
+	}
+	if ok {
+		r.updateState()
+		r.nextVersion()
+	}
+	return
+}
+
+// TrackByID returns the track with the specified ID.
+func (r *Route) TrackByID(trackID string) (*Track, error) {
+	if len(trackID) == 0 || len(trackID) > 36 {
+		return nil, ErrTrackNotFound
+	}
+	for i := 0; i < len(r.tracks); i++ {
+		if r.tracks[i].ID() == trackID {
+			r.nextVersion()
+			return r.tracks[i], nil
+		}
+	}
+	return nil, ErrTrackNotFound
+}
+
+// EachTrack iterates through each track in the route and applies a function.
+func (r *Route) EachTrack(fn func(int, *Track) bool) {
+	for i := 0; i < len(r.tracks); i++ {
+		if ok := fn(i, r.tracks[i]); !ok {
+			break
+		}
 	}
 }
 
-func (r *Route) MarshalBinary() ([]byte, error) {
-	return proto.Marshal(r.ToProto())
+// AddTrack adds a track to the route.
+func (r *Route) AddTrack(track *Track) *Route {
+	if track == nil {
+		return r
+	}
+	r.tracks = append(r.tracks, track)
+	r.updateState()
+	r.nextVersion()
+	return r
 }
 
-func (r *Route) UnmarshalBinary(data []byte) error {
-	p := new(pb.Route)
-	if err := proto.Unmarshal(data, p); err != nil {
-		return err
+// Snapshot creates a snapshot of the route.
+func (r *Route) Snapshot() *RouteSnapshot {
+	tracks := make([]*proto.Snapshot_Navigator_Route_Track, len(r.tracks))
+	for i := 0; i < len(r.tracks); i++ {
+		tracks[i] = r.tracks[i].Snapshot()
 	}
-	r.FromProto(p)
+	var rawProto []byte
+	if r.props != nil {
+		rawProto, _ = json.Marshal(r.props)
+	}
+	return &RouteSnapshot{
+		Id:       r.id,
+		Distance: r.dist,
+		Color:    r.color,
+		Props:    rawProto,
+		Tracks:   tracks,
+		Name:     r.Name().String(),
+		Version:  int64(r.version),
+	}
+}
+
+// RouteFromSnapshot restores a route from a snapshot.
+func (r *Route) RouteFromSnapshot(snap *RouteSnapshot) error {
+	if snap == nil {
+		return nil
+	}
+	tracks := make([]*Track, len(snap.Tracks))
+	for i := 0; i < len(snap.Tracks); i++ {
+		track := new(Track)
+		TrackFromSnapshot(track, snap.Tracks[i])
+		tracks[i] = track
+	}
+	var props properties.Properties
+	if len(snap.Props) > 0 {
+		props = properties.Make()
+		if err := json.Unmarshal(snap.Props, &props); err != nil {
+			return err
+		}
+	}
+
+	if len(snap.Name) > 0 {
+		name, err := ParseName(snap.Name)
+		if err != nil {
+			return err
+		}
+		r.name = name
+	}
+
+	r.id = snap.Id
+	r.dist = snap.Distance
+	r.color = snap.Color
+	r.props = props
+	r.tracks = tracks
+	r.version = int(snap.Version)
 	return nil
 }
 
-func (r *Route) ToProto() *pb.Route {
-	protoRoute := &pb.Route{
-		Distance: r.dist,
-		Tracks:   make([]*pb.Route_Track, len(r.tracks)),
-	}
-	for j := 0; j < len(r.tracks); j++ {
-		protoTrack := &pb.Route_Track{
-			Segmenets: make([]*pb.Route_Track_Segment, 0, len(r.tracks[j])),
-		}
-		for s := 0; s < len(r.tracks[j]); s++ {
-			protoSegment := &pb.Route_Track_Segment{
-				PointA: &pb.Point{
-					Lat: r.tracks[j][s].pointA.X,
-					Lon: r.tracks[j][s].pointA.Y,
-				},
-				PointB: &pb.Point{
-					Lat: r.tracks[j][s].pointB.X,
-					Lon: r.tracks[j][s].pointB.Y,
-				},
-				Bearing:  r.tracks[j][s].bearing,
-				Distance: r.tracks[j][s].dist,
-				Rel:      int64(r.tracks[j][s].rel),
-			}
-			protoTrack.Segmenets = append(protoTrack.Segmenets, protoSegment)
-		}
-		protoRoute.Tracks[j] = protoTrack
-	}
-	return protoRoute
-}
-
-func (r *Route) FromProto(route *pb.Route) {
-	r.dist = route.Distance
-	r.tracks = make([][]*Segment, len(route.Tracks))
-	for j := 0; j < len(route.Tracks); j++ {
-		r.tracks[j] = make([]*Segment, 0, len(route.Tracks[j].Segmenets))
-		for s := 0; s < len(route.Tracks[j].Segmenets); s++ {
-			protoSegment := route.Tracks[j].Segmenets[s]
-			r.tracks[j] = append(r.tracks[j], &Segment{
-				pointA:  Point{X: protoSegment.PointA.Lat, Y: protoSegment.PointA.Lon},
-				pointB:  Point{X: protoSegment.PointB.Lat, Y: protoSegment.PointB.Lon},
-				dist:    protoSegment.Distance,
-				bearing: protoSegment.Bearing,
-				rel:     int(protoSegment.Rel),
-			})
-		}
+func (r *Route) updateState() {
+	r.dist = 0
+	for i := 0; i < len(r.tracks); i++ {
+		r.dist += r.tracks[i].dist
 	}
 }
 
-type Segment struct {
-	pointA  Point
-	pointB  Point
-	dist    float64
-	bearing float64
-	rel     int
+func (r *Route) indexTrack(trackID string) int {
+	for i := 0; i < len(r.tracks); i++ {
+		if r.tracks[i].id == trackID {
+			return i
+		}
+	}
+	return -1
 }
 
-func (s *Segment) Rel() int {
-	return s.rel
-}
-
-func (s *Segment) PointA() Point {
-	return s.pointA
-}
-
-func (s *Segment) PointB() Point {
-	return s.pointB
-}
-
-func (s *Segment) Dist() float64 {
-	return s.dist
-}
-
-func (s *Segment) Bearing() float64 {
-	return s.bearing
-}
-
-func (s *Segment) hasRelation() bool {
-	return s.rel != -1
-}
-
-func SegmentPoint(s *Segment, dist float64) Point {
-	lat, lon := DestinationPoint(s.pointA.X, s.pointA.Y, dist, s.bearing)
-	return Point{X: lat, Y: lon}
+func (r *Route) nextVersion() {
+	r.version++
 }

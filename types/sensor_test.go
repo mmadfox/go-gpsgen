@@ -4,50 +4,16 @@ import (
 	"math"
 	"testing"
 
-	"github.com/mmadfox/go-gpsgen/proto"
 	"github.com/stretchr/testify/require"
 )
 
-func TestSensorToProto(t *testing.T) {
-	s1, err := NewSensor("sensor", 1, 30, 8)
-	require.NoError(t, err)
-	require.NotNil(t, s1)
-
-	protoS1 := s1.ToProto()
-	require.NotNil(t, protoS1)
-	require.Equal(t, s1.Name(), protoS1.Name)
-	require.Equal(t, s1.Min(), protoS1.Min)
-	require.Equal(t, s1.Max(), protoS1.Max)
-	require.Equal(t, s1.ValueX(), protoS1.ValX)
-	require.Equal(t, s1.ValueY(), protoS1.ValY)
-	require.NotNil(t, protoS1.Gen)
-}
-
-func TestSensorFromProto(t *testing.T) {
-	protoS1 := &proto.SensorState{
-		Name: "sensor",
-		Min:  1,
-		Max:  30,
-		ValX: 30,
-		ValY: 60,
-		Gen:  protoGenerator(),
-	}
-
-	s1 := new(Sensor)
-	s1.FromProto(protoS1)
-	require.Equal(t, protoS1.Name, s1.Name())
-	require.Equal(t, protoS1.Min, s1.Min())
-	require.Equal(t, protoS1.Max, s1.Max())
-	require.Equal(t, protoS1.ValX, s1.ValueX())
-	require.Equal(t, protoS1.ValY, s1.ValueY())
-}
-
-func TestNewSensor(t *testing.T) {
+func TestSensor_New(t *testing.T) {
 	type args struct {
 		name      string
 		min       float64
 		max       float64
 		amplitude int
+		mode      SensorMode
 	}
 	type want struct {
 		min  float64
@@ -106,7 +72,7 @@ func TestNewSensor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewSensor(tt.args.name, tt.args.min, tt.args.max, tt.args.amplitude)
+			got, err := NewSensor(tt.args.name, tt.args.min, tt.args.max, tt.args.amplitude, 0)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewSensor() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -122,8 +88,10 @@ func TestNewSensor(t *testing.T) {
 }
 
 func TestSensor_PositiveNext(t *testing.T) {
-	sensor, err := NewSensor("positive", 1, 100, 32)
+	sensor, err := NewSensor("positive", 1, 100, 32, 0)
 	require.NoError(t, err)
+
+	sensor.Shuffle()
 
 	var prev float64
 	for i := 0; i < 100; i++ {
@@ -138,10 +106,43 @@ func TestSensor_PositiveNext(t *testing.T) {
 }
 
 func TestSensor_NegativeNext(t *testing.T) {
-	sensor, err := NewSensor("nagative", -1, -100, 32)
+	sensor, err := NewSensor("nagative", -1, -100, 32, 0)
 	require.NoError(t, err)
+
+	sensor.Shuffle()
+
 	for i := 0; i < 100; i++ {
 		sensor.Next(float64(i) / 100)
 		require.NotZero(t, sensor.ValueY())
 	}
+}
+
+func TestSensor_Snapshot(t *testing.T) {
+	sensor, err := NewSensor("pressure", 0.1, 1.0, 16, 0)
+	require.NoError(t, err)
+	require.NotNil(t, sensor)
+	snap := sensor.Snapshot()
+	require.NotNil(t, snap)
+	require.Equal(t, sensor.ID(), snap.Id)
+	require.Equal(t, sensor.Min(), snap.Min)
+	require.Equal(t, sensor.Max(), snap.Max)
+	require.Equal(t, sensor.ValueX(), snap.ValX)
+	require.Equal(t, sensor.ValueY(), snap.ValY)
+	require.Equal(t, sensor.Name(), snap.Name)
+	require.NotNil(t, snap.Gen)
+}
+
+func TestSensor_FromSnapshot(t *testing.T) {
+	sensor, err := NewSensor("pressure", 0.1, 1.0, 16, 0)
+	require.NoError(t, err)
+	require.NotNil(t, sensor)
+	snap := sensor.Snapshot()
+	sensor2 := new(Sensor)
+	sensor2.FromSnapshot(snap)
+	require.Equal(t, sensor.ID(), sensor2.ID())
+	require.Equal(t, sensor.Min(), sensor2.Min())
+	require.Equal(t, sensor.Max(), sensor2.Max())
+	require.Equal(t, sensor.ValueX(), sensor2.ValueX())
+	require.Equal(t, sensor.ValueY(), sensor2.ValueY())
+	require.Equal(t, sensor.Name(), sensor2.Name())
 }

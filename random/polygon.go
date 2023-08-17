@@ -6,13 +6,14 @@ import (
 	"time"
 )
 
+// Constants related to random data generation.
 const (
-	mp            = 8
-	minFactor     = 1.0 / 10000
-	maxFactor     = 5.0 / 10000
-	defaultPoints = 16
-	minZoom       = 0
-	maxZoom       = 100
+	mp            = 6           // Multiplier for polygon generation
+	minFactor     = 1.0 / 10000 // Minimum factor for generating random points
+	maxFactor     = 5.0 / 10000 // Maximum factor for generating random points
+	defaultPoints = 16          // Default number of points for polygon generation
+	minZoom       = 0           // Minimum zoom level for polygon generation
+	maxZoom       = 100         // Maximum zoom level for polygon generation
 )
 
 var genrand *rand.Rand
@@ -22,6 +23,8 @@ func init() {
 
 }
 
+// Polygon generates a random polygon with the specified number of points and zoom level.
+// It returns a slice of [2]float64 representing the polygon's coordinates.
 func Polygon(points int, zoom float64) [][2]float64 {
 	if points < 0 {
 		points = defaultPoints

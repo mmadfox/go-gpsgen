@@ -8,7 +8,7 @@ import (
 
 const (
 	MaxModelLen = 64
-	MinModelLen = 1
+	MinModelLen = 3
 )
 
 var (

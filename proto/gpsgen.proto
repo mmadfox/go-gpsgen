@@ -4,58 +4,115 @@ option go_package = "./proto";
 
 package proto;
 
+// Represents information about a device.
 message Device {
-    string id = 1;
-    string user_id = 2;
-    double tick = 3;
-    double duration = 4;
-    string model = 5;
-    double speed = 6;
-    double battery_charge = 7;
-    int64  batter_charge_time = 8;
-    Location location = 9;
-    repeated Sensor sensors = 10;
-    map<string, string> props = 11;
-    string descr = 12;
-    bool online = 13;
+    // Battery information for the device.
+    message Battery {
+        double charge = 1; // Battery charge level.
+        int64 charge_time = 2; // Time taken to charge the battery.
+    }
+
+    // Routes associated with the device.
+    message Routes {
+        // Represents a route within the routes.
+        message Route {
+            // Represents a track within a route.
+            message Track {
+                double distance = 1; // Total distance of the track.
+                int64 num_segments = 2; // Number of segments in the track.
+                string color = 3; // Color of the track.
+                bytes props = 4; // Additional properties of the track.
+                int64 props_count = 5; // Number of additional properties.
+            }
+
+            string id = 1; // Route identifier.
+            repeated Track tracks = 2; // Tracks within the route.
+            double distance = 3; // Total distance of the route.
+            string color = 4; // Color of the route.
+            bytes props = 5; // Additional properties of the route.
+            int64 props_count = 6; // Number of additional properties.
+        }
+        repeated Route routes = 1; // List of routes.
+    }
+
+    // Represents a sensor associated with the device.
+    message Sensor {
+        string id = 1; // Sensor identifier.
+        string name = 2; // Sensor name.
+        double val_x = 3; // X-axis value of the sensor.
+        double val_y = 4; // Y-axis value of the sensor.
+    }
+
+    // Represents navigation data for the device.
+    message Navigator {
+        int64 current_route_index = 1; // Current route index.
+        int64 current_track_index = 2; // Current track index.
+        int64 current_segment_index = 3; // Current segment index.
+    }
+
+    // Represents distance information.
+    message Distance {
+        double distance = 1; // Total distance.
+        double current_distance = 2; // Current distance.
+        double route_distance = 3; // Total route distance.
+        double current_route_distance = 4; // Current route distance.
+        double track_distance = 5; // Total track distance.
+        double current_track_distance = 6; // Current track distance.
+        double segment_distance = 7; // Total segment distance.
+        double current_segment_distance = 8; // Current segment distance.
+    }
+
+    // Represents location information.
+    message Location {
+        // Represents degrees-minutes-seconds for latitude or longitude.
+        message DMS {
+            int64 degrees = 1; // Degrees.
+            int64 minutes = 2; // Minutes.
+            double seconds = 3; // Seconds.
+            string direction = 4; // Direction (N/S/E/W).
+        }
+
+        // Represents Universal Transverse Mercator (UTM) coordinates.
+        message UTM {
+            double central_meridian = 1; // Central meridian.
+            double easting = 2; // Easting value.
+            double northing = 3; // Northing value.
+            int64 long_zone = 4; // Longitudinal zone.
+            string lat_zone = 5; // Latitude zone.
+            string hemisphere = 6; // Hemisphere (N/S).
+            int64 srid = 7; // Spatial Reference Identifier.
+        }
+
+        double lat = 1; // Latitude.
+        double lon = 2; // Longitude.
+        double elevation = 3; // Elevation above sea level.
+        double bearing = 4; // Bearing direction.
+        DMS lat_dms = 12; // Latitude in degrees-minutes-seconds.
+        DMS lon_dms = 13; // Longitude in degrees-minutes-seconds.
+        UTM utm = 14; // UTM coordinates.
+    }
+
+    string id = 1; // Device identifier.
+    string user_id = 2; // User identifier.
+    double tick = 3; // Timestamp.
+    double duration = 4; // Duration of device operation.
+    string model = 5; // Device model.
+    double speed = 6; // Device speed.
+    Distance distance = 7; // Distance information.
+    Battery battery = 8; // Battery information.
+    Routes routes = 9; // Routes associated with the device.
+    Location location = 10; // Location information.
+    Navigator navigator = 11; // Navigation data.
+    repeated Sensor sensors = 12; // List of sensors associated with the device.
+    string description = 14; // Device description.
+    bool is_offline = 15; // Flag indicating if the device is offline.
+    int64 offline_duration = 16; // Duration of device offline mode.
+    string color = 17; // Device color.
+    double time_estimate = 18; // Estimated time.
 }
 
-message Sensor {
-    string name = 1;
-    double val_x = 2;
-    double val_y = 3;
-}
-
-message Location {
-    double lat = 1; 
-    double lon = 2;
-    double alt = 3;
-    double bearing = 4;
-    double current_distance = 5;
-    double total_distance = 6;
-    int64  route_index = 7;
-    int64 track_index = 8;
-    int64 segment_index = 9;
-    double segment_distance = 10; 
-    double current_segment_distance = 11;
-    DMS lat_dms = 12; 
-    DMS lon_dms = 13;
-    UTM utm = 14;
-}
-
-message DMS {
-  int64 degrees = 1;
-  int64 minutes = 2;
-  double seconds = 3;
-  string direction = 4;
-}
-
-message UTM {
-   double central_meridian = 1;
-   double easting = 2;
-   double northing = 3;
-   int64 long_zone = 4;
-   string lat_zone = 5;
-   string hemisphere = 6;
-   int64 srid = 7;
+// Represents a packet of data containing device information.
+message Packet {
+    repeated Device devices = 1; // List of devices in the packet.
+    int64 timestamp = 2; // Timestamp for the packet.
 }

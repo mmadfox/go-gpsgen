@@ -4,18 +4,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mmadfox/go-gpsgen/proto"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewBattery(t *testing.T) {
+func TestBattery_New(t *testing.T) {
 	type args struct {
-		min float64
-		max float64
+		min        float64
+		max        float64
+		chargeTime time.Duration
 	}
 	type want struct {
-		min float64
-		max float64
+		min        float64
+		max        float64
+		chargeTime time.Duration
 	}
 	tests := []struct {
 		name    string
@@ -50,10 +51,23 @@ func TestNewBattery(t *testing.T) {
 				max: 5,
 			},
 		},
+		{
+			name: "should return valid object when chargeTime <= 0",
+			args: args{
+				min:        2,
+				max:        4,
+				chargeTime: time.Duration(0),
+			},
+			want: want{
+				min:        2,
+				max:        4,
+				chargeTime: defaultChargeTime,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewBattery(tt.args.min, tt.args.max, time.Hour)
+			got, err := NewBattery(tt.args.min, tt.args.max, tt.args.chargeTime)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewBattery() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -67,35 +81,10 @@ func TestNewBattery(t *testing.T) {
 	}
 }
 
-func TestBatteryToProto(t *testing.T) {
-	battery, err := NewBattery(1, 10, time.Hour)
-	require.NoError(t, err)
-	require.NotNil(t, battery)
-
-	protobattery := battery.ToProto()
-	require.NotNil(t, protobattery)
-	require.Equal(t, battery.Min(), protobattery.Min)
-	require.Equal(t, battery.Max(), protobattery.Max)
-	require.Equal(t, int64(battery.ChargeTime()), protobattery.ChargeTime)
-}
-
-func TestBatteryFromProto(t *testing.T) {
-	protobattery := &proto.BatteryState{
-		Min:        2,
-		Max:        4,
-		ChargeTime: 60,
-	}
-
-	battery := new(Battery)
-	battery.FromProto(protobattery)
-	require.Equal(t, protobattery.Min, battery.Min())
-	require.Equal(t, protobattery.Max, battery.Max())
-	require.Equal(t, protobattery.ChargeTime, int64(battery.ChargeTime()))
-}
-
 func TestBattery_Next(t *testing.T) {
 	battery, err := NewBattery(1, 10, time.Minute)
 	require.NoError(t, err)
+	battery.Reset()
 	tick := float64(1)
 	want := float64(1)
 	for i := 0; i < int(time.Minute.Seconds())+1; i++ {
@@ -104,4 +93,30 @@ func TestBattery_Next(t *testing.T) {
 	}
 	require.Equal(t, want, battery.Value())
 	require.True(t, battery.IsLow())
+	require.Equal(t, time.Minute, battery.ChargeTime())
+}
+
+func TestBattery_Snapshot(t *testing.T) {
+	battery, err := NewBattery(1, 10, time.Minute)
+	require.NoError(t, err)
+	require.NotNil(t, battery)
+	snap := battery.Snapshot()
+	require.NotNil(t, snap)
+	require.Equal(t, battery.Min(), snap.Min)
+	require.Equal(t, battery.Max(), snap.Max)
+	require.Equal(t, 0.0, snap.Val)
+	require.Equal(t, battery.ChargeTime(), time.Duration(snap.ChargeTime))
+}
+
+func TestBattery_FromSnapshot(t *testing.T) {
+	battery, err := NewBattery(1, 10, time.Minute)
+	require.NoError(t, err)
+	require.NotNil(t, battery)
+	snap := battery.Snapshot()
+	battery2 := new(Battery)
+	battery2.FromSnapshot(snap)
+	require.Equal(t, battery.Min(), battery2.Min())
+	require.Equal(t, battery.Max(), battery2.Max())
+	require.Equal(t, battery.val, battery2.val)
+	require.Equal(t, battery.ChargeTime(), battery2.ChargeTime())
 }

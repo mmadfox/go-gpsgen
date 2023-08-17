@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx  xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="https://github.com/tkrajina/gpxgo">
+        <metadata>
+                <author>
+                        <name>go-gpsgen</name>
+                </author>
+        </metadata>
+        <trk>
+                <trkseg>
+                        <trkpt lat="29.5336285618" lon="106.4579227646"></trkpt>
+                </trkseg>
+            
+        </trk>
+</gpx>

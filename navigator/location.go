@@ -1,14 +1,13 @@
 package navigator
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/icholy/utm"
 	"github.com/mmadfox/go-gpsgen/proto"
 )
 
-func SetDMS(lat, lon float64, latDMS *proto.DMS, lonDMS *proto.DMS) {
+func setDMS(lat, lon float64, latDMS *proto.Device_Location_DMS, lonDMS *proto.Device_Location_DMS) {
 	var latDir, lonDir string
 	if lat > 0 {
 		latDir = "N"
@@ -44,7 +43,7 @@ func SetDMS(lat, lon float64, latDMS *proto.DMS, lonDMS *proto.DMS) {
 	lonDMS.Direction = lonDir
 }
 
-func SetUTM(lat, lon float64, u *proto.UTM) {
+func setUTM(lat, lon float64, u *proto.Device_Location_UTM) {
 	e, n, z := utm.ToUTM(lat, lon)
 	hemisphere := "S"
 	if z.North {
@@ -57,14 +56,4 @@ func SetUTM(lat, lon float64, u *proto.UTM) {
 	u.LatZone = string(z.Letter)
 	u.Hemisphere = hemisphere
 	u.Srid = int64(z.SRID())
-}
-
-func FormatUTM(u *proto.UTM) string {
-	return fmt.Sprintf("UTMEasting:%.4f\nUTMNorthing:%.4f\nUTMZone:%d%s\n",
-		u.Easting, u.Northing, u.LongZone, u.LatZone)
-}
-
-func FormatDMS(d *proto.DMS) string {
-	return fmt.Sprintf("%d°%d'%f\"%s",
-		d.Degrees, d.Minutes, d.Seconds, d.Direction)
 }

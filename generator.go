@@ -1,88 +1,387 @@
 package gpsgen
 
 import (
-	"hash/fnv"
+	"context"
+	"math"
 	"runtime"
 	"sync"
+	"time"
 
-	"github.com/google/uuid"
+	pb "github.com/mmadfox/go-gpsgen/proto"
+	"google.golang.org/protobuf/proto"
 )
 
-// Option uses to configure the behavior of the underlying
-// runner instances when creating a new Generator instance.
-type Option func(*runner)
-
-// Generator provides a way to manage and control multiple runner instances,
-// allowing for concurrent execution and management of attached devices.
+// Generator represents the GPS data generator.
 type Generator struct {
-	OnClose func()
-
-	runners []*runner
-	once    sync.Once
+	mu         sync.RWMutex
+	dmu        sync.RWMutex
+	devices    []*Device
+	wg         sync.WaitGroup
+	packet     *pb.Packet
+	cancelFunc context.CancelFunc
+	ctx        context.Context
+	sliceCh    chan slice
+	index      int
+	ticker     *time.Ticker
+	waitCh     chan struct{}
+	nextCh     chan struct{}
+	numWorkers int
+	packetSize int
+	workerSize int
+	interval   time.Duration
+	onError    func(error)
+	onPacket   func([]byte)
+	onNext     func()
 }
 
-// New creates a new Generator instance.
-//
-// It accepts Option arguments to configure the underlying runner instances.
-// It creates a slice of runner instances with a length equal to the number of available CPUs.
-func New(opts ...Option) *Generator {
-	numCpu := runtime.NumCPU()
-	if numCpu > 4 {
-		numCpu = 4
+// Options defines the configuration options for the Generator.
+type Options struct {
+	// Interval determines the time interval between data generation iterations. Default one second.
+	Interval time.Duration
+
+	// PacketSize specifies the size of the data packet generated per iteration. Default 512.
+	PacketSize int
+
+	// NumWorkers sets the number of concurrent workers for data processing. Default numCPU.
+	NumWorkers int
+}
+
+// NewOptions creates a new Options instance with default values.
+func NewOptions() *Options {
+	return &Options{
+		Interval:   time.Second,
+		PacketSize: 512,
+		NumWorkers: runtime.NumCPU(),
 	}
+}
+
+func (o *Options) prepare() {
+	if o.PacketSize < 64 {
+		o.PacketSize = 64
+	}
+	if o.Interval <= 0 {
+		o.Interval = time.Second
+	}
+	if o.NumWorkers <= 0 {
+		o.NumWorkers = runtime.NumCPU()
+	}
+}
+
+// New creates a new GPS data generator with the provided options.
+func New(opts *Options) *Generator {
+	if opts == nil {
+		opts = NewOptions()
+	}
+
+	opts.prepare()
+
 	gen := Generator{
-		runners: make([]*runner, numCpu),
+		interval:   opts.Interval,
+		packetSize: opts.PacketSize,
+		numWorkers: runtime.NumCPU(),
 	}
-	for i := 0; i < numCpu; i++ {
-		gen.runners[i] = newRunner(opts...)
-	}
+	gen.workerSize = gen.packetSize / gen.numWorkers
+	gen.packet = &pb.Packet{Devices: make([]*pb.Device, gen.packetSize)}
+	gen.devices = make([]*Device, 0, gen.packetSize)
+	gen.sliceCh = make(chan slice, gen.numWorkers)
+	gen.waitCh = make(chan struct{}, gen.numWorkers)
+	gen.nextCh = make(chan struct{}, 1)
+	gen.ticker = time.NewTicker(gen.interval)
+	gen.ctx, gen.cancelFunc = context.WithCancel(context.Background())
 	return &gen
 }
 
-// Attach attaches a Device to the Generator by selecting the appropriate runner
-// based on the device's ID and calling the attach method of the selected runner.
-func (g *Generator) Attach(dev *Device) {
-	g.selectRunner(dev.ID()).attach(dev)
-}
-
-// Lookup retrieves a Device object from the Generator based on its deviceID,
-// leveraging the selected runner responsible for handling the device.
-func (g *Generator) Lookup(deviceID uuid.UUID) (*Device, error) {
-	return g.selectRunner(deviceID).lookup(deviceID)
-}
-
-// Detach detaches a Device from the Generator by selecting the appropriate runner
-// based on the device's ID and calling the detach method of the selected runner.
-func (g *Generator) Detach(id uuid.UUID) {
-	g.selectRunner(id).detach(id)
-}
-
-// Run runs the run method of each runner in the Generator.
-func (g *Generator) Run() {
-	for i := 0; i < len(g.runners); i++ {
-		g.runners[i].run()
+// Attach attaches the provided device to the generator.
+func (g *Generator) Attach(d *Device) error {
+	if d == nil {
+		return nil
 	}
+
+	g.mu.Lock()
+	defer g.mu.Unlock()
+
+	if err := d.mount(); err != nil {
+		return err
+	}
+
+	g.devices = append(g.devices, d)
+	return nil
 }
 
-// Close calls the close method of each runner in the Generator.
+// Detach detaches a device with the given ID from the generator.
+func (g *Generator) Detach(deviceID string) error {
+	if len(deviceID) == 0 {
+		return nil
+	}
+
+	g.mu.Lock()
+	defer g.mu.Unlock()
+
+	return g.delete(deviceID)
+}
+
+// Lookup searches for a device with the given ID
+// and returns it along with a boolean indicating its existence.
+func (g *Generator) Lookup(deviceID string) (*Device, bool) {
+	if len(deviceID) == 0 {
+		return nil, false
+	}
+
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+
+	return g.find(deviceID)
+}
+
+// NumDevices returns the number of devices attached to the generator.
+func (g *Generator) NumDevices() int {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	return len(g.devices)
+}
+
+// OnError sets a callback function to handle errors during data generation.
+func (g *Generator) OnError(fn func(error)) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.onError = fn
+}
+
+// OnPacket sets a callback function to handle generated data packets.
+func (g *Generator) OnPacket(fn func([]byte)) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.onPacket = fn
+}
+
+// OnNext sets a callback function to be executed at each "next step" of data generation.
+func (g *Generator) OnNext(fn func()) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.onNext = fn
+}
+
+// Close stops the data generation process and closes the generator.
 func (g *Generator) Close() {
-	for i := 0; i < len(g.runners); i++ {
-		g.runners[i].close()
+	g.cancelFunc()
+}
+
+// Run starts the data generation process using configured settings and attached devices.
+func (g *Generator) Run() {
+	g.wg.Add(g.numWorkers)
+	for i := 0; i < g.numWorkers; i++ {
+		go g.doWorker(i + 1)
 	}
-	if g.OnClose != nil {
-		g.once.Do(func() {
-			g.OnClose()
-		})
+
+	g.wg.Add(1)
+	go g.run()
+
+	g.wg.Add(1)
+	go g.doNext()
+
+	g.wg.Wait()
+}
+
+func (g *Generator) run() {
+	defer func() {
+		g.wg.Done()
+		g.ticker.Stop()
+	}()
+
+	lastTime := time.Now()
+	var tick float64
+
+loop:
+	for {
+		select {
+		case <-g.ctx.Done():
+			break loop
+		case t := <-g.ticker.C:
+			if g.isClosed() {
+				break loop
+			}
+
+			tick = math.Abs(lastTime.Sub(t).Seconds())
+			if tick < 1 {
+				tick = 1
+			}
+
+			g.mu.RLock()
+			for i := 0; i < len(g.devices); i++ {
+				g.devices[i].Next(tick)
+			}
+
+			g.index = 0
+			for i := 0; i < len(g.devices); i++ {
+				g.dmu.Lock()
+				g.packet.Devices[g.index] = g.devices[i].State()
+				g.dmu.Unlock()
+
+				if g.index+1 == g.packetSize {
+					g.mu.RUnlock()
+					g.flush()
+					g.mu.RLock()
+					g.index = 0
+				} else {
+					g.index++
+				}
+			}
+			g.mu.RUnlock()
+
+			g.flush()
+			g.resetPacket()
+			g.notifyNextTick()
+
+			lastTime = t
+		}
 	}
 }
 
-func (g *Generator) selectRunner(deviceID uuid.UUID) *runner {
-	return g.runners[g.runnerIndex(deviceID)]
+type slice struct {
+	from, to int
 }
 
-func (g *Generator) runnerIndex(deviceID uuid.UUID) uint32 {
-	a, _ := deviceID.MarshalBinary()
-	h := fnv.New32a()
-	_, _ = h.Write(a)
-	return h.Sum32() % uint32(len(g.runners))
+func (g *Generator) doWorker(id int) {
+	defer func() {
+		g.wg.Done()
+		g.waitCh <- struct{}{}
+	}()
+
+	buf := make([]byte, 0, g.workerSize)
+	pck := &pb.Packet{}
+	enc := proto.MarshalOptions{}
+
+	for {
+		select {
+		case <-g.ctx.Done():
+			return
+		case s := <-g.sliceCh:
+			if g.isClosed() {
+				return
+			}
+
+			if s.from == 0 && s.to == 0 {
+				g.waitCh <- struct{}{}
+				continue
+			}
+
+			pck.Timestamp = time.Now().Unix()
+
+			g.dmu.RLock()
+			pck.Devices = g.packet.Devices[s.from:s.to]
+			data, err := enc.MarshalAppend(buf[:0], pck)
+			g.dmu.RUnlock()
+
+			if cap(data) > cap(buf) {
+				buf = data[:0]
+			}
+			if err != nil && g.onError != nil {
+				g.onError(err)
+			} else if g.onPacket != nil {
+				g.onPacket(data)
+			}
+
+			if g.isClosed() {
+				return
+			}
+
+			g.waitCh <- struct{}{}
+		}
+	}
+}
+
+func (g *Generator) notifyNextTick() {
+	select {
+	case g.nextCh <- struct{}{}:
+	default:
+	}
+}
+
+func (g *Generator) doNext() {
+	defer g.wg.Done()
+
+	for {
+		select {
+		case <-g.ctx.Done():
+			return
+		case <-g.nextCh:
+			if g.isClosed() {
+				return
+			}
+			if g.onNext == nil {
+				continue
+			}
+			g.onNext()
+		}
+	}
+}
+
+func (g *Generator) flush() {
+	if g.index <= g.numWorkers+g.workerSize {
+		g.sliceCh <- slice{from: 0, to: g.index}
+		if g.isClosed() {
+			return
+		}
+		<-g.waitCh
+	} else {
+		step := g.index / g.numWorkers
+		rem := g.index % g.numWorkers
+		for i := 0; i < g.numWorkers; i++ {
+			if g.isClosed() {
+				return
+			}
+			var s slice
+			s.from = i * step
+			s.to = i*step + step
+			if i == g.numWorkers-1 {
+				s.to += rem
+			}
+			g.sliceCh <- s
+		}
+		for i := 0; i < g.numWorkers; i++ {
+			if g.isClosed() {
+				return
+			}
+			<-g.waitCh
+		}
+	}
+}
+
+func (g *Generator) isClosed() bool {
+	select {
+	case <-g.ctx.Done():
+		return true
+	default:
+		return false
+	}
+}
+
+func (g *Generator) resetPacket() {
+	g.dmu.Lock()
+	defer g.dmu.Unlock()
+	for i := 0; i < len(g.packet.Devices); i++ {
+		g.packet.Devices[i] = nil
+	}
+}
+
+func (g *Generator) delete(deviceID string) error {
+	for i := 0; i < len(g.devices); i++ {
+		if g.devices[i].ID() == deviceID {
+			err := g.devices[i].unmount()
+			g.devices = append(g.devices[:i], g.devices[i+1:]...)
+			return err
+		}
+	}
+	return nil
+}
+
+func (g *Generator) find(deviceID string) (d *Device, ok bool) {
+	for i := 0; i < len(g.devices); i++ {
+		if g.devices[i].ID() == deviceID {
+			d = g.devices[i]
+			ok = true
+			break
+		}
+	}
+	return
 }

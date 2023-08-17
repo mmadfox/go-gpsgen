@@ -1,0 +1,154 @@
+{
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "GeometryCollection",
+          "geometries": [
+            {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    106.45792276464522,
+                    29.533628561797286
+                  ],
+                  [
+                    106.45792276464522,
+                    29.529399791830542
+                  ],
+                  [
+                    106.46334808393323,
+                    29.529399791830542
+                  ],
+                  [
+                    106.46334808393323,
+                    29.533628561797286
+                  ],
+                  [
+                    106.45792276464522,
+                    29.533628561797286
+                  ]
+                ]
+              ]
+            },
+            {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  106.45688223543743,
+                  29.52481100757835
+                ],
+                [
+                  106.46224152558176,
+                  29.528509455345258
+                ]
+              ]
+            }
+          ]
+        },
+        "properties": {
+          "color": "#9d031c",
+          "distance": 2652.039495805213,
+          "numTracks": 2,
+          "routeID": "5a5a1a02-3882-4e9a-aa04-6ec8aed004e9",
+          "tracksInfo": [
+            {
+              "trackID": "46b275c6-c3a5-4f9f-b6d6-c25ebc077311",
+              "color": "#61aa2c",
+              "distance": 1990.2240332037318,
+              "numSegments": 4,
+              "properties": {"foo":"bar", "speed": 3}
+            },
+            {
+              "trackID": "dfcedae9-d8bd-4285-9aef-e602a25014f9",
+              "color": "#aa442f",
+              "distance": 661.8154626014809,
+              "numSegments": 1,
+              "properties": {}
+            }
+          ],
+          "units": "meters"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              106.45688223543743,
+              29.52481100757835
+            ],
+            [
+              106.46224152558176,
+              29.528509455345258
+            ]
+          ]
+        },
+        "properties": {
+          "color": "#a40a72",
+          "distance": 661.8154626014809,
+          "numTracks": 1,
+          "routeID": "2e64af89-fdd0-4802-94de-7951c02aa112",
+          "tracksInfo": [
+            {
+              "trackID": "dfcedae9-d8bd-4285-9aef-e602a25014f9",
+              "color": "#aa442f",
+              "distance": 661.8154626014809,
+              "numSegments": 1,
+              "properties": {}
+            }
+          ],
+          "units": "meters"
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                106.46572166112287,
+                29.533628561797286
+              ],
+              [
+                106.46572166112287,
+                29.52910475476996
+              ],
+              [
+                106.47148606286629,
+                29.52910475476996
+              ],
+              [
+                106.47148606286629,
+                29.533628561797286
+              ],
+              [
+                106.46572166112287,
+                29.533628561797286
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "color": "#ab0911",
+          "distance": 2121.450689846222,
+          "numTracks": 1,
+          "routeID": "80d7893e-8126-4a63-b32e-f736436ad41c",
+          "tracksInfo": [
+            {
+              "trackID": "03a0448e-e83b-4ada-b32d-73f4d03a1a4c",
+              "color": "#3f09e2",
+              "distance": 2121.450689846222,
+              "numSegments": 4,
+              "properties": {}
+            }
+          ],
+          "units": "meters"
+        }
+      }
+    ],
+    "type": "FeatureCollection"
+  }

@@ -4,93 +4,113 @@ option go_package = "./proto";
 
 package proto;
 
-message DeviceSnapshot {
-    bytes id = 1;
-    string model = 2;
-    TypeState speed = 3;  
-    BatteryState battery_charge = 4; 
-    repeated SensorState sensors = 5; 
-    NavigatorState navigator = 6;
-    double loop = 7;
-    double avg_tick = 8;  
-    map<string, string> properties = 9; 
-    string description = 10;
-    string user_id = 11;
-}
+// Main message representing a snapshot of data.
+message Snapshot {
+    // Point with latitude and longitude.
+    message PointLatLon {
+        double lon = 1; // Longitude.
+        double lat = 2; // Latitude.
+    } // END POINT
 
-message NavigatorState {
-   repeated Route routes = 1;
-   int64 route_index = 2; 
-   int64 track_index = 3;
-   int64 segment_index = 4;
-   double segment_distance = 5;
-   double current_distance = 6;
-   int64 offline_index = 7; 
-   Point point = 8; 
-   SensorState elevation = 9;
-   int64 offline_min = 10;
-   int64 offline_max = 11;
-   double total_distance = 12;
-   bool skip_offline = 13;
-}
-
-message TypeState {
-    double min = 1; 
-	double max = 2;
-    double val = 3;
-    Curve gen = 4;
-}    
-
-message BatteryState {
-    double min = 1; 
-	double max = 2;
-    int64 charge_time = 4;
-} 
-
-message SensorState {
-    double min = 1;
-    double max = 2;
-    double val_x = 3;
-    double val_y = 4;
-    string name = 5; 
-    Curve gen = 6;
-}
-
-message Curve {
-   message Point {
-       double x = 1;
-       double y = 2; 
-   }
-            
-   message ControlPoint {
-       Point vp = 1; 
-       Point cp = 2;
-   }
-
-   repeated ControlPoint points = 1; 
-   int64 mode = 2;
-}
-
- message Point {
-    double lat = 1; 
-    double lon = 2;
- }
-
- message Route {
-    message Track {
-        message Segment {
-            Point point_a = 1; 
-            Point point_b = 2; 
-            double distance = 3;
-            double bearing = 4;
-            int64 rel = 5;
+    // Definition of a curve with control points.
+    message Curve {
+        // Individual point in the curve.
+        message Point {
+            double x = 1; // X-coordinate.
+            double y = 2; // Y-coordinate.
         }
-        repeated Segment segmenets = 1;
-    }
-    double distance = 1;
-    repeated Track tracks = 2;
-}
+        
+        // Control points for the curve.
+        message ControlPoint {
+            Point vp = 1; // Vertex point.
+            Point cp = 2; // Control point.
+        }
 
-message Routes {
-    repeated Route routes = 1;
+        repeated ControlPoint points = 1; // Control points of the curve.
+        int64 mode = 2; // Mode of the curve.
+        double min = 3; // Minimum value of the curve.
+        double max = 4; // Maximum value of the curve.
+    } // END CURVE
+
+    // Common data type with a value and optional curve.
+    message CommonType {
+        double min = 1; // Minimum value.
+        double max = 2; // Maximum value.
+        double val = 3; // Actual value.
+        Curve gen = 4; // Optional curve generator.
+    }
+
+    // Battery data type with charge time.
+    message BatteryType {
+        double min = 1; // Minimum value.
+        double max = 2; // Maximum value.
+        int64 charge_time = 4; // Charge time.
+        double val = 5; // Actual value.
+    }
+
+    // Sensor data type with various properties.
+    message SensorType {
+        string id = 1; // Sensor identifier.
+        double min = 2; // Minimum value.
+        double max = 3; // Maximum value.
+        double val_x = 4; // Value along X-axis.
+        double val_y = 5; // Value along Y-axis.
+        string name = 6; // Sensor name.
+        Curve gen = 7; // Optional curve generator.
+    }
+
+    // Navigator data for routes and distances.
+    message Navigator {
+        // Route within the navigator.
+        message Route {
+            // Segment within a route's track.
+            message Segment {
+                PointLatLon point_a = 1; // Starting point.
+                PointLatLon point_b = 2; // Ending point.
+                double distance = 3; // Distance between points.
+                double bearing = 4; // Bearing between points.
+                int64 index = 5; // Index of the segment.
+                int64 rel = 6; // Relative index within the route.
+            } // END SEGMENT
+
+            string id = 1; // Route identifier.
+            repeated Segment segments = 2; // Segments within the route.
+            string color = 3; // Route color.
+            bytes props = 4; // Additional properties of the route.
+            double distance = 5; // Total distance of the route.
+            bool is_closed = 6; // Flag indicating if the route is closed.
+            string name = 7; // Route name.
+            int64 version = 9; // Route version.
+        } // END ROUTE
+
+        repeated Route routes = 1; // Routes within the navigator.
+        int64 route_index = 2; // Index of the current route.
+        int64 track_index = 3; // Index of the current track.
+        int64 segment_index = 4; // Index of the current segment.
+        double current_segment_distance = 5; // Current segment distance.
+        double current_route_distance = 6; // Current route distance.
+        double current_track_distance = 7; // Current track distance.
+        double current_distance = 8; // Current distance.
+        int64 offline_index = 9; // Index of offline data.
+        PointLatLon point = 10; // Geographic point.
+        SensorType elevation = 11; // Elevation sensor.
+        int64 offline_min = 12; // Minimum offline value.
+        int64 offline_max = 13; // Maximum offline value.
+        double distance = 14; // Total distance.
+        bool skip_offline = 15; // Flag to skip offline data.
+        int64 version = 16; // Navigator version.
+    } // END NAVIGATOR
+
+    string id = 1; // Snapshot identifier.
+    string user_id = 2; // User identifier.
+    double tick = 3; // Timestamp.
+    double duration = 4; // Duration of the snapshot.
+    string model = 5; // Model information.
+    string descr = 6; // Description.
+    int64 status = 7; // Status code.
+    string color = 8; // Color information.
+    Navigator navigator = 9; // Navigator data.
+    CommonType speed = 10; // Speed information.
+    BatteryType battery = 11; // Battery information.
+    repeated SensorType sensors = 12; // Sensor information.
 }
