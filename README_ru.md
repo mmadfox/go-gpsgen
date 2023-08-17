@@ -12,6 +12,13 @@ Language: [En](./README.md)
 
 Библиотека может использоваться в тестировании и отладке приложений или устройств, зависящих от GPS/GLONASS/ETC, позволяя создавать симулированные местоположения для проверки их функциональности без необходимости фактического перемещения.
 
+<hr />
+
+[![Coverage Status](https://coveralls.io/repos/github/mmadfox/go-gpsgen/badge.svg?branch=main)](https://coveralls.io/github/mmadfox/go-gpsgen?branch=main)
+[![Docs](https://img.shields.io/badge/docs-current-brightgreen.svg)](https://pkg.go.dev/github.com/mmadfox/go-gpsgen)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mmadfox/go-gpsgen)](https://goreportcard.com/report/github.com/mmadfox/go-gpsgen)
+![Actions](https://github.com/mmadfox/go-gpsgen/actions/workflows/cover.yml/badge.svg)
+
 ## Оглавление
 
 - [Установка](#установка)
