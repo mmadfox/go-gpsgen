@@ -59,7 +59,7 @@ func TestEncodeDecodeTracker(t *testing.T) {
 	require.Empty(t, data)
 	require.NoError(t, err)
 
-	trk := NewDogTracker()
+	trk := NewAnimalTracker()
 	trk.AddRoute(testRoutes()...)
 	trk.Update()
 

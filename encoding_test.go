@@ -10,7 +10,7 @@ import (
 )
 
 func TestPacketFromBytes(t *testing.T) {
-	myTracker := NewDogTracker()
+	myTracker := NewAnimalTracker()
 
 	route := navigator.RouteFromTracks(track1km2segment)
 	myTracker.AddRoute(route)

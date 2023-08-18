@@ -82,7 +82,7 @@ func (n *Navigator) AddRoute(routes ...*Route) error {
 	}
 	ok := 0
 	for i := 0; i < len(routes); i++ {
-		if routes[i] == nil {
+		if routes[i] == nil || n.hasRoute(routes[i].id) {
 			continue
 		}
 		n.routes = append(n.routes, routes[i])
@@ -476,6 +476,11 @@ func (n *Navigator) NextElevation(tick float64) {
 	n.elevation.Next(tick)
 }
 
+// ShuffleElevation shuffles the generator of the Elevation instance.
+func (n *Navigator) ShuffleElevation() {
+	n.elevation.Shuffle()
+}
+
 // NextLocation updates the navigator's location based on the provided tick and speed.
 func (n *Navigator) NextLocation(tick float64, speed float64) (ok bool) {
 	if len(n.routes) == 0 {
@@ -665,6 +670,7 @@ func (n *Navigator) jump(distance float64) bool {
 	return true
 }
 
+// Reset resets the Navigator's state, including indexes and calculated route distance.
 func (n *Navigator) Reset() {
 	n.resetIndexes()
 	n.calcRouteDistance()
@@ -755,6 +761,15 @@ func (n *Navigator) resetIndexes() {
 	n.currentRouteDistance = 0
 	n.currentTrackDistance = 0
 	n.currentDistance = 0
+}
+
+func (n *Navigator) hasRoute(id string) bool {
+	for i := 0; i < len(n.routes); i++ {
+		if id == n.routes[i].id {
+			return true
+		}
+	}
+	return false
 }
 
 func (n *Navigator) indexRoute(routeID string) int {

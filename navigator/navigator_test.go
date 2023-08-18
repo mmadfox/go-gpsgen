@@ -1,7 +1,6 @@
 package navigator
 
 import (
-	"math"
 	"reflect"
 	"testing"
 
@@ -281,39 +280,6 @@ func TestNavigator_MoveToSegment(t *testing.T) {
 	}
 }
 
-func TestNavigator_AddRoutes(t *testing.T) {
-	n, _ := New()
-	route := RouteFromTracks(track300m1segment)
-	assert.Zero(t, n.NumRoutes())
-
-	tickSeconds := float64(1)
-	speedMs := float64(2)
-	distInMeters := 300
-	expectedNumRoutes := 10
-
-	for i := 0; i < expectedNumRoutes; i++ {
-		if i > 0 {
-			n.NextLocation(tickSeconds, speedMs)
-		}
-		n.AddRoute(route)
-
-		expectedNumRoutes := i + 1
-		expectedDist := float64(distInMeters * expectedNumRoutes)
-		actualDist := math.Floor(n.Distance())
-
-		assert.Equal(t, expectedNumRoutes, n.NumRoutes())
-		assert.Zero(t, n.RouteIndex())
-		assert.Zero(t, n.TrackIndex())
-		assert.Zero(t, n.SegmentIndex())
-		assert.Zero(t, n.CurrentDistance())
-		assert.Zero(t, n.CurrentRouteDistance())
-		assert.Zero(t, n.CurrentTrackDistance())
-		assert.Zero(t, n.CurrentSegmentDistance())
-		assert.Equal(t, expectedDist, actualDist)
-	}
-	require.Equal(t, expectedNumRoutes, n.NumRoutes())
-}
-
 func TestNavigator_ResetRoutes(t *testing.T) {
 	n, _ := New()
 	expectedNumRoutes := 10
@@ -337,7 +303,7 @@ func TestNavigator_ResetRoutes(t *testing.T) {
 
 func TestNavigator_AddRoute(t *testing.T) {
 	type args struct {
-		routes []*Route
+		routes func() []*Route
 	}
 	tests := []struct {
 		name    string
@@ -346,13 +312,20 @@ func TestNavigator_AddRoute(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "should return error when are no routes",
+			name: "should return error when are no routes",
+			args: args{
+				routes: func() []*Route {
+					return nil
+				},
+			},
 			wantErr: true,
 		},
 		{
 			name: "should return nil when each route is nil",
 			args: args{
-				routes: []*Route{nil, nil, nil},
+				routes: func() []*Route {
+					return []*Route{nil, nil, nil}
+				},
 			},
 			assert: func(n *Navigator) {
 				assert.Equal(t, 0, n.NumRoutes())
@@ -362,19 +335,34 @@ func TestNavigator_AddRoute(t *testing.T) {
 		{
 			name: "routes added successfully",
 			args: args{
-				routes: routes(10),
+				routes: func() []*Route {
+					return routes(10)
+				},
 			},
 			assert: func(n *Navigator) {
 				assert.Equal(t, 10, n.NumRoutes())
 			},
 			wantErr: false,
 		},
+		{
+			name: "should not add route when already exists",
+			args: args{
+				routes: func() []*Route {
+					routes := routes(1)
+					return []*Route{routes[0], routes[0]}
+				},
+			},
+			assert: func(n *Navigator) {
+				require.Equal(t, 1, n.NumRoutes())
+				require.Equal(t, [3]int{1, 3, 0}, n.Sum())
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			n, err := New()
 			require.NoError(t, err)
-			if err := n.AddRoute(tt.args.routes...); (err != nil) != tt.wantErr {
+			if err := n.AddRoute(tt.args.routes()...); (err != nil) != tt.wantErr {
 				t.Errorf("Navigator.AddRoute() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if tt.assert != nil {

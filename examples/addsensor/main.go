@@ -26,9 +26,22 @@ func main() {
 	})
 
 	droneTracker := gpsgen.NewDroneTracker()
-	droneTracker.AddSensor("s1", 1, 10, 16, types.WithStart|types.WithRandom|types.WithEnd)
-	droneTracker.AddSensor("s2", 10, 20, 16, types.WithRandom|types.WithEnd)
-	droneTracker.AddSensor("s3", 20, 30, 16, 0)
+
+	s1, err := gpsgen.NewSensor("s1", 1, 10, 16, types.WithStart|types.WithRandom|types.WithEnd)
+	if err != nil {
+		panic(err)
+	}
+	droneTracker.AddSensor(s1)
+	s2, err := gpsgen.NewSensor("s2", 10, 20, 16, types.WithRandom|types.WithEnd)
+	if err != nil {
+		panic(err)
+	}
+	droneTracker.AddSensor(s2)
+	s3, err := gpsgen.NewSensor("s3", 20, 30, 16, 0)
+	if err != nil {
+		panic(err)
+	}
+	droneTracker.AddSensor(s3)
 
 	route := gpsgen.RandomRoute(28.31261399982, 53.247483804819666, 2, gpsgen.RouteLevelXL)
 

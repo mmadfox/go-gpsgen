@@ -46,7 +46,7 @@ func NewBattery(min, max float64, chargeTime time.Duration) (*Battery, error) {
 	if min > max {
 		min = max
 	}
-	if chargeTime <= 0 {
+	if chargeTime < 0 {
 		chargeTime = defaultChargeTime
 	}
 	return &Battery{
@@ -73,7 +73,8 @@ func (t *Battery) ChargeTime() time.Duration {
 
 // IsLow returns true if the battery charge level is at its minimum value, indicating a low battery condition.
 func (t *Battery) IsLow() bool {
-	return t.Value() == t.min
+	val := t.Value()
+	return val == t.min
 }
 
 // Value returns the current value of the battery.

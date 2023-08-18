@@ -87,8 +87,8 @@ func NewKidsTracker() *Device {
 	return dev
 }
 
-// NewDogTracker creates a new GPS tracking device.
-func NewDogTracker() *Device {
+// NewAnimalTracker creates a new GPS tracking device.
+func NewAnimalTracker() *Device {
 	dev, _ := NewDevice(DogTrackerOptions())
 	return dev
 }
@@ -177,24 +177,45 @@ func (d *Device) Descr() string {
 	return d.state.Description
 }
 
-// AddSensor adds a sensor to the device with the specified parameters.
-func (d *Device) AddSensor(
-	name string,
-	min, max float64,
-	amplitude int,
-	mode types.SensorMode,
-) (string, error) {
+// AddSensor adds one or more sensors to the device's sensor list.
+func (d *Device) AddSensor(sensor ...*types.Sensor) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	sensor, err := types.NewSensor(name, min, max, amplitude, mode)
-	if err != nil {
-		return "", err
+	if len(sensor) == 0 {
+		return
 	}
-	d.sensors = append(d.sensors, sensor)
-	d.updateSensors()
 
-	return sensor.ID(), nil
+	ok := 0
+	for i := 0; i < len(sensor); i++ {
+		s := sensor[i]
+		if s == nil || d.hasSensor(sensor[i].ID()) {
+			continue
+		}
+		d.sensors = append(d.sensors, sensor[i])
+		ok++
+	}
+
+	if ok > 0 {
+		d.updateSensors()
+	}
+}
+
+// ResetSensors clears the sensor list of the device.
+func (d *Device) ResetSensors() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.sensors = make([]*types.Sensor, 0)
+	d.updateSensors()
+}
+
+// Sensors returns a copy of the device's sensor list.
+func (d *Device) Sensors() []*types.Sensor {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	sensors := make([]*types.Sensor, len(d.sensors))
+	copy(sensors, d.sensors)
+	return sensors
 }
 
 // SensorByID returns the sensor with the given ID
@@ -263,6 +284,10 @@ func (d *Device) SensorAt(i int) *types.Sensor {
 	if len(d.sensors) == 0 || i > len(d.sensors)-1 || i < 0 {
 		return nil
 	}
+
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+
 	return d.sensors[i]
 }
 
@@ -295,6 +320,7 @@ func (d *Device) AddRoute(routes ...*navigator.Route) error {
 	if err == nil {
 		d.updateRoutes()
 	}
+
 	return err
 }
 
@@ -625,6 +651,16 @@ func (d *Device) Next(tick float64) bool {
 
 	if ok := d.navigator.NextLocation(seconds, nextSpeed); !ok {
 		d.updateOfflineState()
+
+		if d.navigator.IsFinish() {
+			d.state.Duration = 0
+			d.speed.Shuffle()
+			d.navigator.ShuffleElevation()
+			for i := 0; i < len(d.sensors); i++ {
+				d.sensors[i].Shuffle()
+			}
+			d.updateState()
+		}
 		return false
 	}
 
@@ -642,15 +678,6 @@ func (d *Device) Next(tick float64) bool {
 	}
 
 	d.updateState()
-
-	if d.navigator.IsFinish() {
-		d.state.Duration = 0
-		d.speed.Shuffle()
-		for i := 0; i < len(d.sensors); i++ {
-			d.sensors[i].Shuffle()
-		}
-	}
-
 	return true
 }
 
@@ -738,6 +765,15 @@ func (d *Device) FromSnapshot(snap *pb.Snapshot) {
 	d.updateSensors()
 	d.updateState()
 	d.updateRoutes()
+}
+
+// NewSensor creates a new Sensor instance with the given name,
+// minimum and maximum values, and amplitude.
+// The amplitude is used to generate a random curve for the sensor.
+//
+// Valid amplitude values from 4 to 512.
+func NewSensor(name string, min, max float64, amplitude int, mode types.SensorMode) (*types.Sensor, error) {
+	return types.NewSensor(name, min, max, amplitude, mode)
 }
 
 func (d *Device) mount() error {
@@ -857,6 +893,15 @@ func (d *Device) isNotValidNS(sum [3]int) (ok bool) {
 		}
 	}
 	return
+}
+
+func (d *Device) hasSensor(id string) bool {
+	for i := 0; i < len(d.sensors); i++ {
+		if d.sensors[i].ID() == id {
+			return true
+		}
+	}
+	return false
 }
 
 func initDeviceState() *pb.Device {

@@ -166,9 +166,23 @@ minValue := 1
 maxValue := 10
 amplitude := 16 // 4 - 512
 
-droneTracker.AddSensor("s1", minValue, maxValue, amplitude, types.WithStart|types.WithRandom|types.WithEnd)
-droneTracker.AddSensor("s2", 10, 20, 16, types.WithRandom|types.WithEnd)
-droneTracker.AddSensor("s3", 20, 30, 16, 0)
+s1, err := gpsgen.NewSensor("s1", minValue, maxValue, amplitude, types.WithStart|types.WithRandom|types.WithEnd)
+if err != nil {
+	panic(err)
+}
+
+droneTracker.AddSensor(s1)
+s2, err := gpsgen.NewSensor("s2", 10, 20, 16, types.WithRandom|types.WithEnd)
+if err != nil {
+	panic(err)
+}
+droneTracker.AddSensor(s2)
+s3, err := gpsgen.NewSensor("s3", 20, 30, 16, 0)
+if err != nil {
+	panic(err)
+}
+droneTracker.AddSensor(s3)
+// ...
 ```
 
 ### Generated Data

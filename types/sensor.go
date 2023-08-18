@@ -101,6 +101,7 @@ func (t *Sensor) String() string {
 	return fmt.Sprintf("%s: valX=%.8f, valY=%.8f", t.name, t.valX, t.valY)
 }
 
+// Shuffle shuffles the generator of the Sensor instance.
 func (t *Sensor) Shuffle() {
 	t.gen.Shuffle()
 }

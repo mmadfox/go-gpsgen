@@ -167,9 +167,11 @@ func (r *Route) AddTrack(track *Track) *Route {
 	if track == nil {
 		return r
 	}
+
 	r.tracks = append(r.tracks, track)
 	r.updateState()
 	r.nextVersion()
+
 	return r
 }
 

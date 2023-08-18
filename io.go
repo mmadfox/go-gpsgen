@@ -16,6 +16,7 @@ func EncodeTracker(t *Device) ([]byte, error) {
 	if t == nil {
 		return []byte{}, nil
 	}
+	t.Update()
 	return t.MarshalBinary()
 }
 
@@ -24,11 +25,12 @@ func DecodeTracker(data []byte) (*Device, error) {
 	if len(data) == 0 {
 		return nil, fmt.Errorf("gpsgen: no tracker data to decode")
 	}
-	trk := new(Device)
-	if err := trk.UnmarshalBinary(data); err != nil {
+	t := new(Device)
+	if err := t.UnmarshalBinary(data); err != nil {
 		return nil, err
 	}
-	return trk, nil
+	t.Update()
+	return t, nil
 }
 
 // EncodeSensors encodes a slice of Sensor types into binary data.
