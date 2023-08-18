@@ -91,6 +91,15 @@ func New(opts *Options) *Generator {
 	return &gen
 }
 
+// HasTracker checks if a tracker with the given deviceID exists in the Generator.
+func (g *Generator) HasTracker(deviceID string) bool {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+
+	_, ok := g.find(deviceID)
+	return ok
+}
+
 // Attach attaches the provided device to the generator.
 func (g *Generator) Attach(d *Device) error {
 	if d == nil {

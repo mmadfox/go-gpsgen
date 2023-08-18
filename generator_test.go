@@ -49,6 +49,13 @@ func TestGenerator_Attach(t *testing.T) {
 	}
 }
 
+func TestGenerator_HasTracker(t *testing.T) {
+	trk := NewAnimalTracker()
+	gen := New(nil)
+	gen.Attach(trk)
+	require.True(t, gen.HasTracker(trk.ID()))
+}
+
 func TestGenerator_Detach(t *testing.T) {
 	tests := []struct {
 		name   string
