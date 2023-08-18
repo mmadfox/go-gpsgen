@@ -427,6 +427,16 @@ func TestNavigator_RouteByID(t *testing.T) {
 	}
 }
 
+func TestNavigator_Routes(t *testing.T) {
+	n, err := New()
+	require.NoError(t, err)
+
+	route := RouteFromTracks(track1km2segment, track3km7segments)
+	n.AddRoute(route)
+
+	require.Len(t, n.Routes(), 1)
+}
+
 func TestNavigator_EachRoute(t *testing.T) {
 	routes := routes(10)
 	n, _ := New()

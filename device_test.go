@@ -1244,3 +1244,11 @@ func TestDevice_SetUserID(t *testing.T) {
 	d.SetUserID(expectedUserID)
 	require.Equal(t, expectedUserID, d.UserID())
 }
+
+func TestDevice_Routes(t *testing.T) {
+	expectedRoutes := testRoutes()
+	d := NewBicycleTracker()
+	d.AddRoute(expectedRoutes...)
+	require.Equal(t, expectedRoutes, d.Routes())
+
+}

@@ -324,6 +324,13 @@ func (d *Device) AddRoute(routes ...*navigator.Route) error {
 	return err
 }
 
+// Routes returns a copy of the routes associated with the device.
+func (d *Device) Routes() []*navigator.Route {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	return d.navigator.Routes()
+}
+
 // RemoveRoute removes a route from the device's navigator by its ID.
 func (d *Device) RemoveRoute(routeID string) bool {
 	d.mu.Lock()

@@ -247,6 +247,13 @@ func (n *Navigator) IsFinish() bool {
 	return false
 }
 
+// Routes returns a copy of the navigator's routes slice.
+func (n *Navigator) Routes() []*Route {
+	routes := make([]*Route, len(n.routes))
+	copy(routes, n.routes)
+	return routes
+}
+
 // CurrentRoute returns the current route.
 func (n *Navigator) CurrentRoute() *Route {
 	if len(n.routes) == 0 {
