@@ -24,6 +24,9 @@ const (
 	Stopped
 )
 
+type Route = navigator.Route // alias for Route
+type Sensor = types.Sensor   // alias for Sensor
+
 // Device represents a GPS tracking device with various capabilities.
 type Device struct {
 	status    Status
