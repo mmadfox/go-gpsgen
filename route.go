@@ -43,3 +43,36 @@ func RandomRoute(lon, lat float64, numTrack int, level int) *navigator.Route {
 	}
 	return route
 }
+
+// RandomRouteForNewYork generates a random route for New York.
+func RandomRouteForNewYork() *navigator.Route {
+	lon := -74.006
+	lat := 40.7128
+
+	numTracks := 3
+	level := RouteLevelL
+
+	return RandomRoute(lon, lat, numTracks, level)
+}
+
+// RandomRouteForMoscow generates a random route for Moscow.
+func RandomRouteForMoscow() *navigator.Route {
+	lon := 37.621096697276414
+	lat := 55.753437064373315
+
+	numTracks := 3
+	level := RouteLevelL
+
+	return RandomRoute(lon, lat, numTracks, level)
+}
+
+// RandomRouteForParis generates a random route for Paris.
+func RandomRouteForParis() *navigator.Route {
+	lon := 2.349892200521907
+	lat := 48.855323829674006
+
+	numTracks := 3       // Number of tracks in the route
+	level := RouteLevelL // Level of the route
+
+	return RandomRoute(lon, lat, numTracks, level)
+}

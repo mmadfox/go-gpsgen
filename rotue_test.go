@@ -53,3 +53,27 @@ func TestRandomRoute(t *testing.T) {
 		})
 	}
 }
+
+func TestRandomRouteForNewYork(t *testing.T) {
+	expectedNumTracks := 3
+
+	route := RandomRouteForNewYork()
+	require.NotNil(t, route)
+	require.Equal(t, expectedNumTracks, route.NumTracks())
+}
+
+func TestRandomRouteForMoscow(t *testing.T) {
+	expectedNumTracks := 3
+
+	route := RandomRouteForMoscow()
+	require.NotNil(t, route)
+	require.Equal(t, expectedNumTracks, route.NumTracks())
+}
+
+func TestRandomRouteForParis(t *testing.T) {
+	expectedNumTracks := 3
+
+	route := RandomRouteForParis()
+	require.NotNil(t, route)
+	require.Equal(t, expectedNumTracks, route.NumTracks())
+}

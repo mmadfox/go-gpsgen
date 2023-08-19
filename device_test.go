@@ -1250,5 +1250,4 @@ func TestDevice_Routes(t *testing.T) {
 	d := NewBicycleTracker()
 	d.AddRoute(expectedRoutes...)
 	require.Equal(t, expectedRoutes, d.Routes())
-
 }
