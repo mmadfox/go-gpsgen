@@ -158,21 +158,21 @@ tracker.AddRoute(route...)
 A sensor provides a flexible and expandable way to represent and work with sensors. It enables the generation of different values for various tasks, making it suitable for diverse applications and use cases, including sensor data collection, modeling, or analysis.
 
 ```go
-// types.WithStart: Generation starts from the minimum value of 1 to 10
-// types.WithEnd:   Generation ends at the minimum value from 10 to 1
-// types.WithRandom: Data generation follows a Bezier curve from 1 to 10
+// types.WithSensorStartMode: Generation starts from the minimum value of 1 to 10
+// types.WithSensorEndMode:   Generation ends at the minimum value from 10 to 1
+// types.WithSensorRandomMode: Data generation follows a Bezier curve from 1 to 10
 
 minValue := 1
 maxValue := 10
 amplitude := 16 // 4 - 512
 
-s1, err := gpsgen.NewSensor("s1", minValue, maxValue, amplitude, types.WithStart|types.WithRandom|types.WithEnd)
+s1, err := gpsgen.NewSensor("s1", minValue, maxValue, amplitude, types.WithSensorStartMode|types.WithSensorRandomMode|types.WithSensorEndMode)
 if err != nil {
 	panic(err)
 }
 
 droneTracker.AddSensor(s1)
-s2, err := gpsgen.NewSensor("s2", 10, 20, 16, types.WithRandom|types.WithEnd)
+s2, err := gpsgen.NewSensor("s2", 10, 20, 16, types.WithSensorRandomMode|types.WithSensorEndMode)
 if err != nil {
 	panic(err)
 }

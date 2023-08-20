@@ -162,21 +162,21 @@ tracker.AddRoute(route...)
 для различных приложений и вариантов использования, включающих сбор данных датчиков, моделирование или анализ.
 
 ```go
-// types.WithStart: Генерация начинается с минимального значения от 1 до 10
-// types.WithEnd:   Генерация заканчивается минимальным значением от 10 до 1
-// types.WithRandom: Генерация данных по кривой безье 1 - 10
+// types.WithSensorStartMode: Генерация начинается с минимального значения от 1 до 10
+// types.WithSensorEndMode:   Генерация заканчивается минимальным значением от 10 до 1
+// types.WithSensorRandomMode: Генерация данных по кривой безье 1 - 10
 
 minValue := 1
 maxValue := 10
 amplitude := 16 // 4 - 512
 
-s1, err := gpsgen.NewSensor("s1", minValue, maxValue, amplitude, types.WithStart|types.WithRandom|types.WithEnd)
+s1, err := gpsgen.NewSensor("s1", minValue, maxValue, amplitude, types.WithSensorStartMode|types.WithSensorRandomMode|types.WithSensorEndMode)
 if err != nil {
 	panic(err)
 }
 
 droneTracker.AddSensor(s1)
-s2, err := gpsgen.NewSensor("s2", 10, 20, 16, types.WithRandom|types.WithEnd)
+s2, err := gpsgen.NewSensor("s2", 10, 20, 16, types.WithSensorRandomMode|types.WithSensorEndMode)
 if err != nil {
 	panic(err)
 }

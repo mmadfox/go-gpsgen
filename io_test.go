@@ -86,7 +86,7 @@ func TestEncodeDecodeSensors(t *testing.T) {
 	sensors := make([]*types.Sensor, 0)
 	for i := 0; i < 10; i++ {
 		sensorName := fmt.Sprintf("s-%d", i)
-		sensor, err := types.NewSensor(sensorName, 0, float64(i), 8, types.WithRandom)
+		sensor, err := types.NewSensor(sensorName, 0, float64(i), 8, types.WithSensorRandomMode)
 		require.NoError(t, err)
 		sensors = append(sensors, sensor)
 	}

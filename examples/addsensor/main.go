@@ -27,12 +27,12 @@ func main() {
 
 	droneTracker := gpsgen.NewDroneTracker()
 
-	s1, err := gpsgen.NewSensor("s1", 1, 10, 16, types.WithStart|types.WithRandom|types.WithEnd)
+	s1, err := gpsgen.NewSensor("s1", 1, 10, 16, types.WithSensorStartMode|types.WithSensorRandomMode|types.WithSensorEndMode)
 	if err != nil {
 		panic(err)
 	}
 	droneTracker.AddSensor(s1)
-	s2, err := gpsgen.NewSensor("s2", 10, 20, 16, types.WithRandom|types.WithEnd)
+	s2, err := gpsgen.NewSensor("s2", 10, 20, 16, types.WithSensorRandomMode|types.WithSensorEndMode)
 	if err != nil {
 		panic(err)
 	}

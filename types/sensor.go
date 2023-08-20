@@ -31,9 +31,9 @@ type (
 )
 
 const (
-	WithRandom = curve.ModeDefault
-	WithStart  = curve.ModeMinStart
-	WithEnd    = curve.ModeMinEnd
+	WithSensorRandomMode = curve.ModeDefault
+	WithSensorStartMode  = curve.ModeMinStart
+	WithSensorEndMode    = curve.ModeMinEnd
 )
 
 // NewSensor creates a new Sensor instance with the given name,
