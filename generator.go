@@ -129,6 +129,18 @@ func (g *Generator) Detach(deviceID string) error {
 	return g.delete(deviceID)
 }
 
+// Each iterates over the collection of Device objects managed by the Generator
+// and applies the provided function to each device.
+func (g *Generator) Each(fn func(int, *Device) bool) {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	for i := 0; i < len(g.devices); i++ {
+		if next := fn(i, g.devices[i]); !next {
+			break
+		}
+	}
+}
+
 // Lookup searches for a device with the given ID
 // and returns it along with a boolean indicating its existence.
 func (g *Generator) Lookup(deviceID string) (*Device, bool) {
@@ -250,7 +262,7 @@ type slice struct {
 	from, to int
 }
 
-func (g *Generator) doWorker(id int) {
+func (g *Generator) doWorker(_ int) {
 	defer func() {
 		g.wg.Done()
 		g.waitCh <- struct{}{}

@@ -202,7 +202,7 @@ func TestGenerator_Run(t *testing.T) {
 func TestGenerator_Close(t *testing.T) {
 	gen := New(&Options{
 		Interval:   10 * time.Millisecond,
-		PacketSize: -1, // default 32
+		PacketSize: -1,
 	})
 	for i := 0; i < 1000; i++ {
 		devOpts := NewDeviceOptions()
@@ -225,4 +225,31 @@ func TestGenerator_Close(t *testing.T) {
 		gen.Close()
 	}()
 	gen.Run()
+}
+
+func TestGenerator_Each(t *testing.T) {
+	gen := New(nil)
+
+	want := 0
+	for i := 0; i < 10; i++ {
+		gen.Attach(NewDroneTracker())
+	}
+
+	go func() {
+		for i := 0; i < 100; i++ {
+			gen.Attach(NewAnimalTracker())
+			time.Sleep(5 * time.Millisecond)
+		}
+	}()
+
+	gen.Each(func(n int, dev *Device) bool {
+		want++
+		if n > 5 {
+			return false
+		}
+		time.Sleep(1 * time.Millisecond)
+		return true
+	})
+
+	require.NotZero(t, want)
 }
