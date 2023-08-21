@@ -2,8 +2,6 @@ package random
 
 import (
 	"math"
-	"math/rand"
-	"time"
 )
 
 // Constants related to random data generation.
@@ -13,15 +11,8 @@ const (
 	maxFactor     = 5.0 / 10000 // Maximum factor for generating random points
 	defaultPoints = 16          // Default number of points for polygon generation
 	minZoom       = 0           // Minimum zoom level for polygon generation
-	maxZoom       = 100         // Maximum zoom level for polygon generation
+	maxZoom       = 1000        // Maximum zoom level for polygon generation
 )
-
-var genrand *rand.Rand
-
-func init() {
-	genrand = rand.New(rand.NewSource(time.Now().UnixNano()))
-
-}
 
 // Polygon generates a random polygon with the specified number of points and zoom level.
 // It returns a slice of [2]float64 representing the polygon's coordinates.
@@ -38,7 +29,7 @@ func Polygon(points int, zoom float64) [][2]float64 {
 	coordinates := make([][2]float64, points+1)
 	offsets := make([]float64, points)
 	for i := 0; i < points; i++ {
-		v := genrand.Float64()
+		v := defaultRnd.Float64()
 		if i == 0 {
 			offsets[i] = v
 		} else {
@@ -64,5 +55,5 @@ func Polygon(points int, zoom float64) [][2]float64 {
 }
 
 func randFactor(min, max float64) float64 {
-	return min + rand.ExpFloat64()*(max-min)
+	return min + defaultRnd.ExpFloat64()*(max-min)
 }

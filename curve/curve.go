@@ -1,10 +1,8 @@
 package curve
 
 import (
-	"math/rand"
-	"time"
-
 	"github.com/mmadfox/go-gpsgen/proto"
+	"github.com/mmadfox/go-gpsgen/random"
 )
 
 // CurveMode represents different curve modes.
@@ -16,7 +14,7 @@ const (
 	ModeMinEnd
 )
 
-var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
+var rnd = random.NewRandom()
 
 // Point represents a point in 2D space.
 type Point struct {
