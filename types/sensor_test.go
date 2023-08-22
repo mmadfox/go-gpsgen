@@ -214,7 +214,7 @@ func TestRestoreSensor(t *testing.T) {
 				min:       0,
 				max:       100,
 				amplitude: 5,
-				mode:      WithSensorRandomMode | WithSensorStartMode,
+				mode:      WithSensorRandomMode | WithSensorStartMode | WithSensorEndMode,
 			},
 		},
 	}

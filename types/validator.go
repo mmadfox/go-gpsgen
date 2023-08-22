@@ -25,10 +25,5 @@ func validateAmplitude(val int) error {
 }
 
 func validateSensorMode(mode SensorMode) bool {
-	switch mode {
-	case WithSensorEndMode, WithSensorStartMode, WithSensorRandomMode:
-		return true
-	default:
-		return false
-	}
+	return mode > 0
 }
