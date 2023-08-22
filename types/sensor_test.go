@@ -4,6 +4,7 @@ import (
 	"math"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -145,4 +146,88 @@ func TestSensor_FromSnapshot(t *testing.T) {
 	require.Equal(t, sensor.ValueX(), sensor2.ValueX())
 	require.Equal(t, sensor.ValueY(), sensor2.ValueY())
 	require.Equal(t, sensor.Name(), sensor2.Name())
+}
+
+func TestRestoreSensor(t *testing.T) {
+	type args struct {
+		id        string
+		name      string
+		min       float64
+		max       float64
+		amplitude int
+		mode      SensorMode
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "should return error when id is empty",
+			args: args{
+				id: "",
+			},
+			wantErr: true,
+		},
+		{
+			name: "should return error when id is invalid",
+			args: args{
+				id: "badid",
+			},
+			wantErr: true,
+		},
+		{
+			name: "should return error when name is empty",
+			args: args{
+				id:   uuid.NewString(),
+				name: "",
+			},
+			wantErr: true,
+		},
+		{
+			name: "should return error when amplitude < 4",
+			args: args{
+				id:        uuid.NewString(),
+				name:      "s1",
+				amplitude: 3,
+			},
+			wantErr: true,
+		},
+		{
+			name: "should not return error when invalid sensor mode",
+			args: args{
+				id:        uuid.NewString(),
+				name:      "s1",
+				amplitude: 4,
+				min:       1,
+				max:       2,
+				mode:      SensorMode(999),
+			},
+			wantErr: false,
+		},
+		{
+			name: "should not return error when all params are valid",
+			args: args{
+				id:        uuid.NewString(),
+				name:      "s1",
+				min:       0,
+				max:       100,
+				amplitude: 5,
+				mode:      WithSensorRandomMode | WithSensorStartMode,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := RestoreSensor(tt.args.id, tt.args.name, tt.args.min, tt.args.max, tt.args.amplitude, tt.args.mode)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("RestoreSensor() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantErr {
+				return
+			}
+			require.NotNil(t, got)
+		})
+	}
 }

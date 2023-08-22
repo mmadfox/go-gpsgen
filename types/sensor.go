@@ -48,8 +48,8 @@ func NewSensor(name string, min, max float64, amplitude int, mode SensorMode) (*
 	if len(name) == 0 {
 		return nil, ErrEmptySensorName
 	}
-	if mode == 0 {
-		mode = curve.ModeDefault
+	if ok := validateSensorMode(mode); !ok {
+		mode = WithSensorRandomMode
 	}
 	gen := curve.New(
 		min,
@@ -59,6 +59,43 @@ func NewSensor(name string, min, max float64, amplitude int, mode SensorMode) (*
 	)
 	return &Sensor{
 		id:   uuid.NewString(),
+		name: name,
+		min:  min,
+		max:  max,
+		gen:  gen,
+	}, nil
+}
+
+// RestoreSensor creates a new Sensor instance with the given params.
+// Valid amplitude values from 4 to 512.
+func RestoreSensor(
+	id string,
+	name string,
+	min, max float64,
+	amplitude int,
+	mode SensorMode,
+) (*Sensor, error) {
+	sid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+	if len(name) == 0 {
+		return nil, ErrEmptySensorName
+	}
+	if err := validateAmplitude(amplitude); err != nil {
+		return nil, err
+	}
+	if ok := validateSensorMode(mode); !ok {
+		mode = WithSensorRandomMode
+	}
+	gen := curve.New(
+		min,
+		max,
+		amplitude,
+		mode,
+	)
+	return &Sensor{
+		id:   sid.String(),
 		name: name,
 		min:  min,
 		max:  max,
@@ -98,7 +135,7 @@ func (t *Sensor) ValueY() float64 {
 
 // String returns a formatted string representation of the sensor object.
 func (t *Sensor) String() string {
-	return fmt.Sprintf("%s: valX=%.8f, valY=%.8f", t.name, t.valX, t.valY)
+	return fmt.Sprintf("Sensor{%s: valX=%.8f, valY=%.8f}", t.name, t.valX, t.valY)
 }
 
 // Shuffle shuffles the generator of the Sensor instance.
