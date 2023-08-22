@@ -34,6 +34,7 @@ func TestSensor_New(t *testing.T) {
 				min:       -10,
 				max:       -5,
 				amplitude: 8,
+				mode:      WithSensorRandomMode,
 			},
 			want: want{
 				name: "negative sensors",
