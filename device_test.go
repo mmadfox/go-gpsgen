@@ -1123,6 +1123,8 @@ func TestDevice_Snapshot(t *testing.T) {
 
 	require.NotNil(t, snap.Navigator)
 	require.Len(t, snap.Navigator.Routes, 1)
+
+	require.Equal(t, int64(Stopped), snap.Status)
 }
 
 func TestDevice_FromSnapshot(t *testing.T) {

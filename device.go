@@ -724,12 +724,13 @@ func (d *Device) Snapshot() *pb.Snapshot {
 		Tick:      d.state.Tick,
 		Color:     d.state.Color,
 		Descr:     d.state.Description,
-		Status:    int64(d.status),
+		Status:    int64(Stopped),
 		Duration:  d.state.Duration,
 		Navigator: d.navigator.Snapshot(),
 		Speed:     d.speed.Snapshot(),
 		Battery:   d.battery.Snapshot(),
 	}
+
 	if len(d.sensors) > 0 {
 		snap.Sensors = make([]*pb.Snapshot_SensorType, len(d.sensors))
 		d.mu.RLock()
