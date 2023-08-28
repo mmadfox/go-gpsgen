@@ -930,7 +930,7 @@ proto.proto.Device.Routes.Route.prototype.toObject = function(opt_includeInstanc
  */
 proto.proto.Device.Routes.Route.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    routeId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     tracksList: jspb.Message.toObjectList(msg.getTracksList(),
     proto.proto.Device.Routes.Route.Track.toObject, includeInstance),
     distance: jspb.Message.getFloatingPointFieldWithDefault(msg, 3, 0.0),
@@ -975,7 +975,7 @@ proto.proto.Device.Routes.Route.deserializeBinaryFromReader = function(msg, read
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setId(value);
+      msg.setRouteId(value);
       break;
     case 2:
       var value = new proto.proto.Device.Routes.Route.Track;
@@ -1027,7 +1027,7 @@ proto.proto.Device.Routes.Route.prototype.serializeBinary = function() {
  */
 proto.proto.Device.Routes.Route.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getId();
+  f = message.getRouteId();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -1105,11 +1105,12 @@ proto.proto.Device.Routes.Route.Track.prototype.toObject = function(opt_includeI
  */
 proto.proto.Device.Routes.Route.Track.toObject = function(includeInstance, msg) {
   var f, obj = {
-    distance: jspb.Message.getFloatingPointFieldWithDefault(msg, 1, 0.0),
-    numSegments: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    color: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    trackId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    distance: jspb.Message.getFloatingPointFieldWithDefault(msg, 2, 0.0),
+    numSegments: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    color: jspb.Message.getFieldWithDefault(msg, 4, ""),
     props: msg.getProps_asB64(),
-    propsCount: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    propsCount: jspb.Message.getFieldWithDefault(msg, 6, 0)
   };
 
   if (includeInstance) {
@@ -1147,22 +1148,26 @@ proto.proto.Device.Routes.Route.Track.deserializeBinaryFromReader = function(msg
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTrackId(value);
+      break;
+    case 2:
       var value = /** @type {number} */ (reader.readDouble());
       msg.setDistance(value);
       break;
-    case 2:
+    case 3:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setNumSegments(value);
       break;
-    case 3:
+    case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setColor(value);
       break;
-    case 4:
+    case 5:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
       msg.setProps(value);
       break;
-    case 5:
+    case 6:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setPropsCount(value);
       break;
@@ -1195,38 +1200,45 @@ proto.proto.Device.Routes.Route.Track.prototype.serializeBinary = function() {
  */
 proto.proto.Device.Routes.Route.Track.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getTrackId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
   f = message.getDistance();
   if (f !== 0.0) {
     writer.writeDouble(
-      1,
+      2,
       f
     );
   }
   f = message.getNumSegments();
   if (f !== 0) {
     writer.writeInt64(
-      2,
+      3,
       f
     );
   }
   f = message.getColor();
   if (f.length > 0) {
     writer.writeString(
-      3,
+      4,
       f
     );
   }
   f = message.getProps_asU8();
   if (f.length > 0) {
     writer.writeBytes(
-      4,
+      5,
       f
     );
   }
   f = message.getPropsCount();
   if (f !== 0) {
     writer.writeInt64(
-      5,
+      6,
       f
     );
   }
@@ -1234,11 +1246,29 @@ proto.proto.Device.Routes.Route.Track.serializeBinaryToWriter = function(message
 
 
 /**
- * optional double distance = 1;
+ * optional string track_id = 1;
+ * @return {string}
+ */
+proto.proto.Device.Routes.Route.Track.prototype.getTrackId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.proto.Device.Routes.Route.Track} returns this
+ */
+proto.proto.Device.Routes.Route.Track.prototype.setTrackId = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional double distance = 2;
  * @return {number}
  */
 proto.proto.Device.Routes.Route.Track.prototype.getDistance = function() {
-  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 1, 0.0));
+  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 2, 0.0));
 };
 
 
@@ -1247,16 +1277,16 @@ proto.proto.Device.Routes.Route.Track.prototype.getDistance = function() {
  * @return {!proto.proto.Device.Routes.Route.Track} returns this
  */
 proto.proto.Device.Routes.Route.Track.prototype.setDistance = function(value) {
-  return jspb.Message.setProto3FloatField(this, 1, value);
+  return jspb.Message.setProto3FloatField(this, 2, value);
 };
 
 
 /**
- * optional int64 num_segments = 2;
+ * optional int64 num_segments = 3;
  * @return {number}
  */
 proto.proto.Device.Routes.Route.Track.prototype.getNumSegments = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
 };
 
 
@@ -1265,16 +1295,16 @@ proto.proto.Device.Routes.Route.Track.prototype.getNumSegments = function() {
  * @return {!proto.proto.Device.Routes.Route.Track} returns this
  */
 proto.proto.Device.Routes.Route.Track.prototype.setNumSegments = function(value) {
-  return jspb.Message.setProto3IntField(this, 2, value);
+  return jspb.Message.setProto3IntField(this, 3, value);
 };
 
 
 /**
- * optional string color = 3;
+ * optional string color = 4;
  * @return {string}
  */
 proto.proto.Device.Routes.Route.Track.prototype.getColor = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
 
@@ -1283,21 +1313,21 @@ proto.proto.Device.Routes.Route.Track.prototype.getColor = function() {
  * @return {!proto.proto.Device.Routes.Route.Track} returns this
  */
 proto.proto.Device.Routes.Route.Track.prototype.setColor = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
 /**
- * optional bytes props = 4;
+ * optional bytes props = 5;
  * @return {!(string|Uint8Array)}
  */
 proto.proto.Device.Routes.Route.Track.prototype.getProps = function() {
-  return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+  return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
 
 /**
- * optional bytes props = 4;
+ * optional bytes props = 5;
  * This is a type-conversion wrapper around `getProps()`
  * @return {string}
  */
@@ -1308,7 +1338,7 @@ proto.proto.Device.Routes.Route.Track.prototype.getProps_asB64 = function() {
 
 
 /**
- * optional bytes props = 4;
+ * optional bytes props = 5;
  * Note that Uint8Array is not supported on all browsers.
  * @see http://caniuse.com/Uint8Array
  * This is a type-conversion wrapper around `getProps()`
@@ -1325,16 +1355,16 @@ proto.proto.Device.Routes.Route.Track.prototype.getProps_asU8 = function() {
  * @return {!proto.proto.Device.Routes.Route.Track} returns this
  */
 proto.proto.Device.Routes.Route.Track.prototype.setProps = function(value) {
-  return jspb.Message.setProto3BytesField(this, 4, value);
+  return jspb.Message.setProto3BytesField(this, 5, value);
 };
 
 
 /**
- * optional int64 props_count = 5;
+ * optional int64 props_count = 6;
  * @return {number}
  */
 proto.proto.Device.Routes.Route.Track.prototype.getPropsCount = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
 };
 
 
@@ -1343,15 +1373,15 @@ proto.proto.Device.Routes.Route.Track.prototype.getPropsCount = function() {
  * @return {!proto.proto.Device.Routes.Route.Track} returns this
  */
 proto.proto.Device.Routes.Route.Track.prototype.setPropsCount = function(value) {
-  return jspb.Message.setProto3IntField(this, 5, value);
+  return jspb.Message.setProto3IntField(this, 6, value);
 };
 
 
 /**
- * optional string id = 1;
+ * optional string route_id = 1;
  * @return {string}
  */
-proto.proto.Device.Routes.Route.prototype.getId = function() {
+proto.proto.Device.Routes.Route.prototype.getRouteId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -1360,7 +1390,7 @@ proto.proto.Device.Routes.Route.prototype.getId = function() {
  * @param {string} value
  * @return {!proto.proto.Device.Routes.Route} returns this
  */
-proto.proto.Device.Routes.Route.prototype.setId = function(value) {
+proto.proto.Device.Routes.Route.prototype.setRouteId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 

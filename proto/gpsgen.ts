@@ -119,9 +119,9 @@ export interface Device_Routes {
  */
 export interface Device_Routes_Route {
     /**
-     * @generated from protobuf field: string id = 1;
+     * @generated from protobuf field: string route_id = 1;
      */
-    id: string; // Route identifier.
+    routeId: string; // Route identifier.
     /**
      * @generated from protobuf field: repeated proto.Device.Routes.Route.Track tracks = 2;
      */
@@ -150,23 +150,27 @@ export interface Device_Routes_Route {
  */
 export interface Device_Routes_Route_Track {
     /**
-     * @generated from protobuf field: double distance = 1;
+     * @generated from protobuf field: string track_id = 1;
+     */
+    trackId: string; // Track id
+    /**
+     * @generated from protobuf field: double distance = 2;
      */
     distance: number; // Total distance of the track.
     /**
-     * @generated from protobuf field: int64 num_segments = 2;
+     * @generated from protobuf field: int64 num_segments = 3;
      */
     numSegments: bigint; // Number of segments in the track.
     /**
-     * @generated from protobuf field: string color = 3;
+     * @generated from protobuf field: string color = 4;
      */
     color: string; // Color of the track.
     /**
-     * @generated from protobuf field: bytes props = 4;
+     * @generated from protobuf field: bytes props = 5;
      */
     props: Uint8Array; // Additional properties of the track.
     /**
-     * @generated from protobuf field: int64 props_count = 5;
+     * @generated from protobuf field: int64 props_count = 6;
      */
     propsCount: bigint; // Number of additional properties.
 }
@@ -623,7 +627,7 @@ export const Device_Routes = new Device_Routes$Type();
 class Device_Routes_Route$Type extends MessageType<Device_Routes_Route> {
     constructor() {
         super("proto.Device.Routes.Route", [
-            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 1, name: "route_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 2, name: "tracks", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Device_Routes_Route_Track },
             { no: 3, name: "distance", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ },
             { no: 4, name: "color", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
@@ -632,7 +636,7 @@ class Device_Routes_Route$Type extends MessageType<Device_Routes_Route> {
         ]);
     }
     create(value?: PartialMessage<Device_Routes_Route>): Device_Routes_Route {
-        const message = { id: "", tracks: [], distance: 0, color: "", props: new Uint8Array(0), propsCount: 0n };
+        const message = { routeId: "", tracks: [], distance: 0, color: "", props: new Uint8Array(0), propsCount: 0n };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Device_Routes_Route>(this, message, value);
@@ -643,8 +647,8 @@ class Device_Routes_Route$Type extends MessageType<Device_Routes_Route> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* string id */ 1:
-                    message.id = reader.string();
+                case /* string route_id */ 1:
+                    message.routeId = reader.string();
                     break;
                 case /* repeated proto.Device.Routes.Route.Track tracks */ 2:
                     message.tracks.push(Device_Routes_Route_Track.internalBinaryRead(reader, reader.uint32(), options));
@@ -673,9 +677,9 @@ class Device_Routes_Route$Type extends MessageType<Device_Routes_Route> {
         return message;
     }
     internalBinaryWrite(message: Device_Routes_Route, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* string id = 1; */
-        if (message.id !== "")
-            writer.tag(1, WireType.LengthDelimited).string(message.id);
+        /* string route_id = 1; */
+        if (message.routeId !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.routeId);
         /* repeated proto.Device.Routes.Route.Track tracks = 2; */
         for (let i = 0; i < message.tracks.length; i++)
             Device_Routes_Route_Track.internalBinaryWrite(message.tracks[i], writer.tag(2, WireType.LengthDelimited).fork(), options).join();
@@ -705,15 +709,16 @@ export const Device_Routes_Route = new Device_Routes_Route$Type();
 class Device_Routes_Route_Track$Type extends MessageType<Device_Routes_Route_Track> {
     constructor() {
         super("proto.Device.Routes.Route.Track", [
-            { no: 1, name: "distance", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ },
-            { no: 2, name: "num_segments", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 3, name: "color", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 4, name: "props", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
-            { no: 5, name: "props_count", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ }
+            { no: 1, name: "track_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "distance", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ },
+            { no: 3, name: "num_segments", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 4, name: "color", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 5, name: "props", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
+            { no: 6, name: "props_count", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ }
         ]);
     }
     create(value?: PartialMessage<Device_Routes_Route_Track>): Device_Routes_Route_Track {
-        const message = { distance: 0, numSegments: 0n, color: "", props: new Uint8Array(0), propsCount: 0n };
+        const message = { trackId: "", distance: 0, numSegments: 0n, color: "", props: new Uint8Array(0), propsCount: 0n };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Device_Routes_Route_Track>(this, message, value);
@@ -724,19 +729,22 @@ class Device_Routes_Route_Track$Type extends MessageType<Device_Routes_Route_Tra
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* double distance */ 1:
+                case /* string track_id */ 1:
+                    message.trackId = reader.string();
+                    break;
+                case /* double distance */ 2:
                     message.distance = reader.double();
                     break;
-                case /* int64 num_segments */ 2:
+                case /* int64 num_segments */ 3:
                     message.numSegments = reader.int64().toBigInt();
                     break;
-                case /* string color */ 3:
+                case /* string color */ 4:
                     message.color = reader.string();
                     break;
-                case /* bytes props */ 4:
+                case /* bytes props */ 5:
                     message.props = reader.bytes();
                     break;
-                case /* int64 props_count */ 5:
+                case /* int64 props_count */ 6:
                     message.propsCount = reader.int64().toBigInt();
                     break;
                 default:
@@ -751,21 +759,24 @@ class Device_Routes_Route_Track$Type extends MessageType<Device_Routes_Route_Tra
         return message;
     }
     internalBinaryWrite(message: Device_Routes_Route_Track, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* double distance = 1; */
+        /* string track_id = 1; */
+        if (message.trackId !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.trackId);
+        /* double distance = 2; */
         if (message.distance !== 0)
-            writer.tag(1, WireType.Bit64).double(message.distance);
-        /* int64 num_segments = 2; */
+            writer.tag(2, WireType.Bit64).double(message.distance);
+        /* int64 num_segments = 3; */
         if (message.numSegments !== 0n)
-            writer.tag(2, WireType.Varint).int64(message.numSegments);
-        /* string color = 3; */
+            writer.tag(3, WireType.Varint).int64(message.numSegments);
+        /* string color = 4; */
         if (message.color !== "")
-            writer.tag(3, WireType.LengthDelimited).string(message.color);
-        /* bytes props = 4; */
+            writer.tag(4, WireType.LengthDelimited).string(message.color);
+        /* bytes props = 5; */
         if (message.props.length)
-            writer.tag(4, WireType.LengthDelimited).bytes(message.props);
-        /* int64 props_count = 5; */
+            writer.tag(5, WireType.LengthDelimited).bytes(message.props);
+        /* int64 props_count = 6; */
         if (message.propsCount !== 0n)
-            writer.tag(5, WireType.Varint).int64(message.propsCount);
+            writer.tag(6, WireType.Varint).int64(message.propsCount);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

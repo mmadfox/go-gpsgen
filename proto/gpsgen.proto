@@ -18,14 +18,15 @@ message Device {
         message Route {
             // Represents a track within a route.
             message Track {
-                double distance = 1; // Total distance of the track.
-                int64 num_segments = 2; // Number of segments in the track.
-                string color = 3; // Color of the track.
-                bytes props = 4; // Additional properties of the track.
-                int64 props_count = 5; // Number of additional properties.
+                string track_id = 1; // Track id
+                double distance = 2; // Total distance of the track.
+                int64 num_segments = 3; // Number of segments in the track.
+                string color = 4; // Color of the track.
+                bytes props = 5; // Additional properties of the track.
+                int64 props_count = 6; // Number of additional properties.
             }
 
-            string id = 1; // Route identifier.
+            string route_id = 1; // Route identifier.
             repeated Track tracks = 2; // Tracks within the route.
             double distance = 3; // Total distance of the route.
             string color = 4; // Color of the route.

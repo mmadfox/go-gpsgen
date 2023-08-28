@@ -870,6 +870,7 @@ func (d *Device) updateRoutes() {
 				trackProps, _ = json.Marshal(track.Props())
 			}
 			tracks = append(tracks, &pb.Device_Routes_Route_Track{
+				TrackId:     track.ID(),
 				Distance:    track.Distance(),
 				NumSegments: int64(track.NumSegments()),
 				Color:       track.Color(),
@@ -879,7 +880,7 @@ func (d *Device) updateRoutes() {
 		}
 		d.state.Routes.Routes = append(d.state.Routes.Routes,
 			&pb.Device_Routes_Route{
-				Id:         route.ID(),
+				RouteId:    route.ID(),
 				Tracks:     tracks,
 				Distance:   route.Distance(),
 				Color:      route.Color(),
