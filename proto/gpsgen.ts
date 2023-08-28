@@ -85,6 +85,10 @@ export interface Device {
      * @generated from protobuf field: double time_estimate = 18;
      */
     timeEstimate: number; // Estimated time.
+    /**
+     * @generated from protobuf field: proto.Device.Unit units = 19;
+     */
+    units?: Device_Unit; // Device units.
 }
 /**
  * Battery information for the device.
@@ -349,6 +353,27 @@ export interface Device_Location_UTM {
     srid: bigint; // Spatial Reference Identifier.
 }
 /**
+ * @generated from protobuf message proto.Device.Unit
+ */
+export interface Device_Unit {
+    /**
+     * @generated from protobuf field: string distance = 1;
+     */
+    distance: string;
+    /**
+     * @generated from protobuf field: string speed = 2;
+     */
+    speed: string;
+    /**
+     * @generated from protobuf field: string time = 3;
+     */
+    time: string;
+    /**
+     * @generated from protobuf field: string elevation = 4;
+     */
+    elevation: string;
+}
+/**
  * Represents a packet of data containing device information.
  *
  * @generated from protobuf message proto.Packet
@@ -383,7 +408,8 @@ class Device$Type extends MessageType<Device> {
             { no: 15, name: "is_offline", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
             { no: 16, name: "offline_duration", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 17, name: "color", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 18, name: "time_estimate", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ }
+            { no: 18, name: "time_estimate", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ },
+            { no: 19, name: "units", kind: "message", T: () => Device_Unit }
         ]);
     }
     create(value?: PartialMessage<Device>): Device {
@@ -449,6 +475,9 @@ class Device$Type extends MessageType<Device> {
                 case /* double time_estimate */ 18:
                     message.timeEstimate = reader.double();
                     break;
+                case /* proto.Device.Unit units */ 19:
+                    message.units = Device_Unit.internalBinaryRead(reader, reader.uint32(), options, message.units);
+                    break;
                 default:
                     let u = options.readUnknownField;
                     if (u === "throw")
@@ -512,6 +541,9 @@ class Device$Type extends MessageType<Device> {
         /* double time_estimate = 18; */
         if (message.timeEstimate !== 0)
             writer.tag(18, WireType.Bit64).double(message.timeEstimate);
+        /* proto.Device.Unit units = 19; */
+        if (message.units)
+            Device_Unit.internalBinaryWrite(message.units, writer.tag(19, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -1258,6 +1290,74 @@ class Device_Location_UTM$Type extends MessageType<Device_Location_UTM> {
  * @generated MessageType for protobuf message proto.Device.Location.UTM
  */
 export const Device_Location_UTM = new Device_Location_UTM$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class Device_Unit$Type extends MessageType<Device_Unit> {
+    constructor() {
+        super("proto.Device.Unit", [
+            { no: 1, name: "distance", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "speed", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "time", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "elevation", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<Device_Unit>): Device_Unit {
+        const message = { distance: "", speed: "", time: "", elevation: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<Device_Unit>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Device_Unit): Device_Unit {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string distance */ 1:
+                    message.distance = reader.string();
+                    break;
+                case /* string speed */ 2:
+                    message.speed = reader.string();
+                    break;
+                case /* string time */ 3:
+                    message.time = reader.string();
+                    break;
+                case /* string elevation */ 4:
+                    message.elevation = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: Device_Unit, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string distance = 1; */
+        if (message.distance !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.distance);
+        /* string speed = 2; */
+        if (message.speed !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.speed);
+        /* string time = 3; */
+        if (message.time !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.time);
+        /* string elevation = 4; */
+        if (message.elevation !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.elevation);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message proto.Device.Unit
+ */
+export const Device_Unit = new Device_Unit$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class Packet$Type extends MessageType<Packet> {
     constructor() {

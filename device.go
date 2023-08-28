@@ -927,5 +927,11 @@ func initDeviceState() *pb.Device {
 			LonDms: &pb.Device_Location_DMS{},
 			Utm:    &pb.Device_Location_UTM{},
 		},
+		Units: &pb.Device_Unit{
+			Distance:  "meters",
+			Speed:     "meter per second",
+			Time:      "seconds",
+			Elevation: "meters",
+		},
 	}
 }

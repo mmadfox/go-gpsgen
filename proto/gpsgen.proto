@@ -93,6 +93,13 @@ message Device {
         UTM utm = 14; // UTM coordinates.
     }
 
+    message Unit {
+        string distance = 1;
+        string speed = 2;
+        string time = 3;
+        string elevation = 4;
+    }
+
     string id = 1; // Device identifier.
     string user_id = 2; // User identifier.
     double tick = 3; // Timestamp.
@@ -110,6 +117,8 @@ message Device {
     int64 offline_duration = 16; // Duration of device offline mode.
     string color = 17; // Device color.
     double time_estimate = 18; // Estimated time.
+    Unit units = 19; // Device units.
+
 }
 
 // Represents a packet of data containing device information.
