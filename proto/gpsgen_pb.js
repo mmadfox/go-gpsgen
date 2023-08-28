@@ -1857,7 +1857,9 @@ proto.proto.Device.Navigator.toObject = function(includeInstance, msg) {
   var f, obj = {
     currentRouteIndex: jspb.Message.getFieldWithDefault(msg, 1, 0),
     currentTrackIndex: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    currentSegmentIndex: jspb.Message.getFieldWithDefault(msg, 3, 0)
+    currentSegmentIndex: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    currentRouteId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    currentTrackId: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
   if (includeInstance) {
@@ -1906,6 +1908,14 @@ proto.proto.Device.Navigator.deserializeBinaryFromReader = function(msg, reader)
       var value = /** @type {number} */ (reader.readInt64());
       msg.setCurrentSegmentIndex(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCurrentRouteId(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCurrentTrackId(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1953,6 +1963,20 @@ proto.proto.Device.Navigator.serializeBinaryToWriter = function(message, writer)
   if (f !== 0) {
     writer.writeInt64(
       3,
+      f
+    );
+  }
+  f = message.getCurrentRouteId();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
+      f
+    );
+  }
+  f = message.getCurrentTrackId();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
       f
     );
   }
@@ -2010,6 +2034,42 @@ proto.proto.Device.Navigator.prototype.getCurrentSegmentIndex = function() {
  */
 proto.proto.Device.Navigator.prototype.setCurrentSegmentIndex = function(value) {
   return jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+/**
+ * optional string current_route_id = 4;
+ * @return {string}
+ */
+proto.proto.Device.Navigator.prototype.getCurrentRouteId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.proto.Device.Navigator} returns this
+ */
+proto.proto.Device.Navigator.prototype.setCurrentRouteId = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional string current_track_id = 5;
+ * @return {string}
+ */
+proto.proto.Device.Navigator.prototype.getCurrentTrackId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.proto.Device.Navigator} returns this
+ */
+proto.proto.Device.Navigator.prototype.setCurrentTrackId = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 

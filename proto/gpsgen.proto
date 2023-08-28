@@ -49,6 +49,8 @@ message Device {
         int64 current_route_index = 1; // Current route index.
         int64 current_track_index = 2; // Current track index.
         int64 current_segment_index = 3; // Current segment index.
+        string current_route_id = 4; // Current route id.
+        string current_track_id = 5; // Current track id.
     }
 
     // Represents distance information.

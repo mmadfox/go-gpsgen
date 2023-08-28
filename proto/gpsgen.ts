@@ -219,6 +219,14 @@ export interface Device_Navigator {
      * @generated from protobuf field: int64 current_segment_index = 3;
      */
     currentSegmentIndex: bigint; // Current segment index.
+    /**
+     * @generated from protobuf field: string current_route_id = 4;
+     */
+    currentRouteId: string; // Current route id.
+    /**
+     * @generated from protobuf field: string current_track_id = 5;
+     */
+    currentTrackId: string; // Current track id.
 }
 /**
  * Represents distance information.
@@ -893,11 +901,13 @@ class Device_Navigator$Type extends MessageType<Device_Navigator> {
         super("proto.Device.Navigator", [
             { no: 1, name: "current_route_index", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 2, name: "current_track_index", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 3, name: "current_segment_index", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ }
+            { no: 3, name: "current_segment_index", kind: "scalar", T: 3 /*ScalarType.INT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 4, name: "current_route_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 5, name: "current_track_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<Device_Navigator>): Device_Navigator {
-        const message = { currentRouteIndex: 0n, currentTrackIndex: 0n, currentSegmentIndex: 0n };
+        const message = { currentRouteIndex: 0n, currentTrackIndex: 0n, currentSegmentIndex: 0n, currentRouteId: "", currentTrackId: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Device_Navigator>(this, message, value);
@@ -916,6 +926,12 @@ class Device_Navigator$Type extends MessageType<Device_Navigator> {
                     break;
                 case /* int64 current_segment_index */ 3:
                     message.currentSegmentIndex = reader.int64().toBigInt();
+                    break;
+                case /* string current_route_id */ 4:
+                    message.currentRouteId = reader.string();
+                    break;
+                case /* string current_track_id */ 5:
+                    message.currentTrackId = reader.string();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -938,6 +954,12 @@ class Device_Navigator$Type extends MessageType<Device_Navigator> {
         /* int64 current_segment_index = 3; */
         if (message.currentSegmentIndex !== 0n)
             writer.tag(3, WireType.Varint).int64(message.currentSegmentIndex);
+        /* string current_route_id = 4; */
+        if (message.currentRouteId !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.currentRouteId);
+        /* string current_track_id = 5; */
+        if (message.currentTrackId !== "")
+            writer.tag(5, WireType.LengthDelimited).string(message.currentTrackId);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

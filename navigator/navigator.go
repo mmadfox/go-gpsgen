@@ -347,6 +347,12 @@ func (n *Navigator) Update(state *proto.Device) {
 	state.Navigator.CurrentRouteIndex = int64(n.routeIndex)
 	state.Navigator.CurrentTrackIndex = int64(n.trackIndex)
 	state.Navigator.CurrentSegmentIndex = int64(n.segmentIndex)
+	if route := n.CurrentRoute(); route != nil {
+		state.Navigator.CurrentRouteId = route.ID()
+	}
+	if track := n.CurrentTrack(); track != nil {
+		state.Navigator.CurrentTrackId = track.ID()
+	}
 
 	state.Location.Bearing = n.CurrentBearing()
 	state.Location.Elevation = n.elevation.ValueY()

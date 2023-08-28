@@ -813,6 +813,8 @@ func TestNavigator_Update(t *testing.T) {
 	require.Equal(t, int64(n.RouteIndex()), state.Navigator.CurrentRouteIndex)
 	require.Equal(t, int64(n.TrackIndex()), state.Navigator.CurrentTrackIndex)
 	require.Equal(t, int64(n.SegmentIndex()), state.Navigator.CurrentSegmentIndex)
+	require.NotEmpty(t, state.Navigator.CurrentRouteId)
+	require.NotEmpty(t, state.Navigator.CurrentTrackId)
 
 	require.Equal(t, n.CurrentBearing(), state.Location.Bearing)
 	require.Equal(t, n.Elevation(), state.Location.Elevation)
