@@ -78,7 +78,7 @@ func New(opts *Options) *Generator {
 	gen := Generator{
 		interval:   opts.Interval,
 		packetSize: opts.PacketSize,
-		numWorkers: runtime.NumCPU(),
+		numWorkers: opts.NumWorkers,
 	}
 	gen.workerSize = gen.packetSize / gen.numWorkers
 	gen.packet = &pb.Packet{Devices: make([]*pb.Device, gen.packetSize)}

@@ -1010,7 +1010,9 @@ func TestNavigator_MoveToTrackByID(t *testing.T) {
 		routeID string
 		trackID string
 	}
-	routes := routes(3)
+
+	routes := routes(10)
+
 	tests := []struct {
 		name    string
 		args    args
@@ -1039,15 +1041,15 @@ func TestNavigator_MoveToTrackByID(t *testing.T) {
 		{
 			name: "successfully moved to route",
 			args: args{
-				routeID: routes[1].ID(),
+				routeID: routes[8].ID(),
 				trackID: routes[1].TrackAt(1).ID(),
 			},
 			arrange: func(n *Navigator) {
 				n.AddRoute(routes...)
 			},
 			assert: func(n *Navigator) {
-				require.Equal(t, 1, n.RouteIndex())
-				require.Equal(t, 1, n.TrackIndex())
+				require.Equal(t, routes[8].ID(), n.CurrentRoute().ID())
+				require.Equal(t, routes[8].TrackAt(1).ID(), n.CurrentTrack().ID())
 			},
 			want: true,
 		},
