@@ -36,28 +36,28 @@ type Generator struct {
 
 // Options defines the configuration options for the Generator.
 type Options struct {
-	// Interval determines the time interval between data generation iterations. Default one second.
+	// Interval determines the time interval between data generation iterations. Default three seconds.
 	Interval time.Duration
 
-	// PacketSize specifies the size of the data packet generated per iteration. Default 512.
+	// PacketSize specifies the size of the data packet generated per iteration. Default 8192.
 	PacketSize int
 
-	// NumWorkers sets the number of concurrent workers for data processing. Default numCPU.
+	// NumWorkers sets the number of concurrent workers for data processing. Default 4.
 	NumWorkers int
 }
 
 // NewOptions creates a new Options instance with default values.
 func NewOptions() *Options {
 	return &Options{
-		Interval:   time.Second,
-		PacketSize: 512,
-		NumWorkers: runtime.NumCPU(),
+		Interval:   3*time.Second,
+		PacketSize: 8192,
+		NumWorkers: 4,
 	}
 }
 
 func (o *Options) prepare() {
-	if o.PacketSize < 64 {
-		o.PacketSize = 64
+	if o.PacketSize < 1024 {
+		o.PacketSize = 1024
 	}
 	if o.Interval <= 0 {
 		o.Interval = time.Second
@@ -262,13 +262,12 @@ type slice struct {
 	from, to int
 }
 
-func (g *Generator) doWorker(_ int) {
+func (g *Generator) doWorker(n int) {
 	defer func() {
 		g.wg.Done()
 		g.waitCh <- struct{}{}
 	}()
-
-	buf := make([]byte, 0, g.workerSize)
+	
 	pck := &pb.Packet{}
 	enc := proto.MarshalOptions{}
 
@@ -288,14 +287,12 @@ func (g *Generator) doWorker(_ int) {
 
 			pck.Timestamp = time.Now().Unix()
 
+			buf := make([]byte, 0, g.workerSize)
 			g.dmu.RLock()
 			pck.Devices = g.packet.Devices[s.from:s.to]
-			data, err := enc.MarshalAppend(buf[:0], pck)
+			data, err := enc.MarshalAppend(buf, pck)
 			g.dmu.RUnlock()
 
-			if cap(data) > cap(buf) {
-				buf = data[:0]
-			}
 			if err != nil && g.onError != nil {
 				g.onError(err)
 			} else if g.onPacket != nil {
