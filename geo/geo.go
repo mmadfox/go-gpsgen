@@ -14,3 +14,17 @@ type LatLonPoint struct {
 	Lat float64
 	Lon float64
 }
+
+type BBox struct {
+	MinLon float64
+	MinLat float64
+	MaxLon float64
+	MaxLat float64
+}
+
+func (b BBox) In(pt LatLonPoint) bool {
+	return b.MinLon <= pt.Lon &&
+		b.MinLat <= pt.Lat &&
+		b.MaxLon >= pt.Lon &&
+		b.MaxLat >= pt.Lat
+}
