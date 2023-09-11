@@ -181,3 +181,18 @@ func TestLatLon(t *testing.T) {
 		require.True(t, bbox.In(pt))
 	}
 }
+
+func TestBBoxCenter(t *testing.T) {
+	bbox := geo.BBox{
+		MinLon: 1.213284,
+		MinLat: 18.600047,
+		MaxLon: 11.587763,
+		MaxLat: 25.518278,
+	}
+	expected := geo.LatLonPoint{
+		Lat: 22.0591625,
+		Lon: 6.4005235,
+	}
+	center := bbox.Center()
+	require.Equal(t, expected, center)
+}
